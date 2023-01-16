@@ -6,36 +6,50 @@
 #include <map>
 #include <mutex>
 
-namespace Metrics {
-    class RegistryImpl : public IRegistry {
-        std::map<std::string, std::shared_ptr<IMetric>> m_metrics;
+namespace Metrics
+{
+    struct MetricKeyComparer
+    {
+        bool operator()(const Metrics::Key &k1, const Metrics::Key &k2) const
+        {
+            return k1.name < k2.name || k1.labels < k2.labels;
+        }
+    };
 
-        Gauge getGauge() override {
-            //Key key = { "gauge", {} };
-            std::string key = "gauge";
+    class RegistryImpl : public IRegistry
+    {
+        std::map<Key, std::shared_ptr<IMetric>, MetricKeyComparer> m_metrics;
+
+        Gauge getGauge(const Key &key) override
+        {
             auto it = m_metrics.find(key);
 
-            if (it == m_metrics.end()) {
+            if (it == m_metrics.end())
+            {
                 it = m_metrics.emplace(std::make_pair(key, createGauge())).first;
             }
             auto metric = std::dynamic_pointer_cast<IGaugeValue>(it->second);
+            if (!metric)
+                throw std::exception("Metric exists but is of wrong type");
             return Gauge(metric);
         };
 
-        Counter getCounter() override {
-            //Key key = { "gauge", {} };
-            std::string key = "counter";
+        Counter getCounter(const Key &key) override
+        {
             auto it = m_metrics.find(key);
 
-            if (it == m_metrics.end()) {
+            if (it == m_metrics.end())
+            {
                 it = m_metrics.emplace(std::make_pair(key, createCounter())).first;
             }
             auto metric = std::dynamic_pointer_cast<ICounterValue>(it->second);
+            if (!metric)
+                throw std::exception("Metric exists but is of wrong type");
             return Counter(metric);
         };
     };
 
-    IRegistry& defaultRegistry()
+    IRegistry &defaultRegistry()
     {
         static RegistryImpl s_registry;
         return s_registry;

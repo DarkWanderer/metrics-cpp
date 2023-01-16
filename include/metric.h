@@ -20,9 +20,5 @@ namespace Metrics
     {
         std::string name;
         Labels labels;
-
-        bool operator<(const Key& other) {
-            return name < other.name && labels < other.labels;
-        }
     };
 }

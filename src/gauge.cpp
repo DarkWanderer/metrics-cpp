@@ -4,8 +4,8 @@
 
 namespace Metrics
 {
-    IGaugeValue::~IGaugeValue() {
-        
+    IGaugeValue::~IGaugeValue()
+    {
     }
 
     class GaugeImpl : public IGaugeValue
@@ -18,12 +18,13 @@ namespace Metrics
         GaugeImpl(const GaugeImpl &) = delete;
         ~GaugeImpl() = default;
 
-        IGaugeValue& operator=(double value) override
+        IGaugeValue &operator=(double value) override
         {
             m_value.store(value);
             return *this;
         };
-        IGaugeValue& operator+=(double value) override
+        
+        IGaugeValue &operator+=(double value) override
         {
             // TODO: revisit memory ordering
             double oldv, newv;
@@ -34,7 +35,8 @@ namespace Metrics
             } while (!m_value.compare_exchange_weak(oldv, newv));
             return *this;
         };
-        IGaugeValue& operator-=(double value) override
+
+        IGaugeValue &operator-=(double value) override
         {
             // TODO: revisit memory ordering
             double oldv, newv;
@@ -45,6 +47,7 @@ namespace Metrics
             } while (!m_value.compare_exchange_weak(oldv, newv));
             return *this;
         };
+
         double value() override
         {
             return m_value.load();

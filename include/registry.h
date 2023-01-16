@@ -9,8 +9,8 @@ namespace Metrics
 {
     class IRegistry {
     public:
-        virtual Gauge getGauge() = 0;
-        virtual Counter getCounter() = 0;
+        virtual Gauge getGauge(const Key& key) = 0;
+        virtual Counter getCounter(const Key& key) = 0;
     };
 
     METRICS_EXPORT IRegistry& defaultRegistry();
