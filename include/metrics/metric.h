@@ -1,18 +1,18 @@
 #pragma once
 
-#include <labels.h>
-
+#include <metrics/labels.h>
 #include <metrics_export.h>
 
 #include <string>
 
 namespace Metrics
 {
-    class IMetric {
+    class IMetric
+    {
     public:
         IMetric() = default;
-        IMetric(const IMetric&) = default;
-        IMetric(IMetric&&) = default;
+        IMetric(const IMetric &) = default;
+        IMetric(IMetric &&) = default;
         METRICS_EXPORT virtual ~IMetric() = default;
     };
 

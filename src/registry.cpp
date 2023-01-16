@@ -1,5 +1,5 @@
-#include <registry.h>
-#include <metric.h>
+#include <metrics/registry.h>
+#include <metrics/metric.h>
 
 #include "factory.h"
 
@@ -47,11 +47,30 @@ namespace Metrics
                 throw std::exception("Metric exists but is of wrong type");
             return Counter(metric);
         };
+
+        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override
+        {
+            auto it = m_metrics.find(key);
+
+            if (it == m_metrics.end())
+            {
+                it = m_metrics.emplace(std::make_pair(key, createHistogram(bounds))).first;
+            }
+            auto metric = std::dynamic_pointer_cast<IHistogram>(it->second);
+            if (!metric)
+                throw std::exception("Metric exists but is of wrong type");
+            return Histogram(metric);
+        };
     };
 
     IRegistry &defaultRegistry()
     {
         static RegistryImpl s_registry;
         return s_registry;
+    }
+
+    METRICS_EXPORT std::unique_ptr<IRegistry> Metrics::createRegistry()
+    {
+        return std::make_unique<RegistryImpl>();
     };
 }

@@ -1,4 +1,4 @@
-#include <gauge.h>
+#include <metrics/gauge.h>
 
 #include <atomic>
 
@@ -54,7 +54,7 @@ namespace Metrics
         }
     };
 
-    std::shared_ptr<IMetric> createGauge()
+    std::shared_ptr<IGaugeValue> createGauge()
     {
         return std::make_shared<GaugeImpl>();
     }

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <metrics_export.h>
-
-#include <metric.h>
+#include <metrics/metric.h>
 
 #include <memory>
 
@@ -11,9 +10,9 @@ namespace Metrics
     class IGaugeValue : public IMetric
     {
     public:
-        virtual IGaugeValue& operator=(double value) = 0;
-        virtual IGaugeValue& operator+=(double value) = 0;
-        virtual IGaugeValue& operator-=(double value) = 0;
+        virtual IGaugeValue &operator=(double value) = 0;
+        virtual IGaugeValue &operator+=(double value) = 0;
+        virtual IGaugeValue &operator-=(double value) = 0;
         virtual double value() = 0;
         operator double() { return value(); };
 
@@ -21,24 +20,24 @@ namespace Metrics
         METRICS_EXPORT virtual ~IGaugeValue() = 0;
     };
 
-    // Stack-based container for actual metric
+    // Stack-based container referencing actual metric
     class Gauge : public IGaugeValue
     {
     private:
-        std::shared_ptr<IGaugeValue> m_value;
+        const std::shared_ptr<IGaugeValue> m_value;
 
     public:
-        IGaugeValue& operator=(double value) override
+        IGaugeValue &operator=(double value) override
         {
             *m_value = value;
             return *this;
         };
-        IGaugeValue& operator+=(double value) override
+        IGaugeValue &operator+=(double value) override
         {
             *m_value += value;
             return *this;
         };
-        IGaugeValue& operator-=(double value) override
+        IGaugeValue &operator-=(double value) override
         {
             *m_value -= value;
             return *this;
@@ -47,6 +46,7 @@ namespace Metrics
 
         Gauge(std::shared_ptr<IGaugeValue> value) : m_value(value){};
         Gauge(const Gauge &other) = default;
+        Gauge(Gauge &&other) = default;
         ~Gauge() = default;
     };
 }
