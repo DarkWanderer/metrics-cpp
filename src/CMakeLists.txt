@@ -1,9 +1,7 @@
 include(GenerateExportHeader)
 
 add_library(metrics SHARED 
-    gauge.cpp 
-    counter.cpp 
-    histogram.cpp
+    metrics.cpp
     registry.cpp
 )
 generate_export_header(metrics)

@@ -33,3 +33,5 @@
 
 # Build directories
 build/
+out/
+.vs/
