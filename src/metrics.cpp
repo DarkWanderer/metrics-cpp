@@ -24,7 +24,8 @@ namespace Metrics
 		std::atomic<double> m_value;
 
 	public:
-		GaugeImpl() = default;
+		GaugeImpl() { m_value.store(0.); };
+		GaugeImpl(GaugeImpl&&) = delete;
 		GaugeImpl(const GaugeImpl&) = delete;
 		~GaugeImpl() = default;
 
@@ -63,13 +64,15 @@ namespace Metrics
 			return m_value.load();
 		}
 	};
+
 	class CounterImpl : public ICounterValue
 	{
 	private:
 		std::atomic<uint64_t> m_value;
 
 	public:
-		CounterImpl() = default;
+		CounterImpl() noexcept { m_value.store(0); };
+		CounterImpl(CounterImpl&& other) = delete;
 		CounterImpl(const CounterImpl&) = delete;
 		~CounterImpl() = default;
 		ICounterValue& operator++(int) override
@@ -92,25 +95,33 @@ namespace Metrics
 		};
 	};
 
+	struct Bucket {
+		double bound;
+		CounterImpl counter;
+	};
+
 	class HistogramImpl : public IHistogram {
 	private:
-		// TODO: vector-based storage
-		std::map<double, CounterImpl> m_buckets;
+		Bucket* m_buckets;
+		size_t m_bucket_count;
 		CounterImpl m_count;
 		GaugeImpl m_sum;
 	public:
 		HistogramImpl(const std::vector<double>& bounds)
 		{
-			for (auto bound : bounds)
-				m_buckets[bound].reset();
-			m_buckets[std::numeric_limits<double>::infinity()].reset();
+			m_bucket_count = bounds.size();
+			m_buckets = new Bucket[m_bucket_count];
+			for (int i = 0; i < m_bucket_count; i++) {
+				m_buckets[i].bound = bounds[i];
+			}
 		}
 
 		void observe(double value) override {
-			for (auto& bucket : m_buckets)
+			for (int i = 0; i < m_bucket_count; i++)
 			{
-				if (bucket.first >= value)
-					bucket.second++;
+				auto& bucket = m_buckets[i];
+				if (bucket.bound >= value)
+					bucket.counter++;
 			}
 			m_count++;
 			m_sum += value;

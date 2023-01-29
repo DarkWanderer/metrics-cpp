@@ -18,6 +18,8 @@ namespace Metrics
 
     protected:
         METRICS_EXPORT virtual ~IGaugeValue() = 0;
+        IGaugeValue() = default;
+        IGaugeValue(IGaugeValue&&) noexcept = default;
     };
 
     // Stack-based container referencing actual metric
