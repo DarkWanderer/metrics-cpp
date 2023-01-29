@@ -12,7 +12,7 @@ namespace Metrics
     {
         bool operator()(const Metrics::Key &k1, const Metrics::Key &k2) const
         {
-            return k1.name < k2.name || k1.labels < k2.labels;
+            return (k1.name < k2.name) || (k1.labels < k2.labels);
         }
     };
 
