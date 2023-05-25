@@ -7,7 +7,7 @@
 
 namespace Metrics
 {
-    class ICounterValue : public IMetric
+    class ICounterValue : public ITypedMetric<TypeCode::Counter>
     {
     public:
         virtual ICounterValue &operator++(int) = 0;
@@ -23,7 +23,7 @@ namespace Metrics
     };
 
     // Stack-based wrapper for actual metric
-    class Counter : public ICounterValue
+    class Counter : public ValueProxy<ICounterValue>
     {
     private:
         const std::shared_ptr<ICounterValue> m_value;

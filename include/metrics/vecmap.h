@@ -8,23 +8,23 @@
 // Based on public domain code from https://github.com/michaeljclark/vecmap/blob/master/src/vecmap.h
 
 namespace Metrics {
-	template <class Key, class T, class Compare = std::less<Key>>
-	class vecmap : protected std::vector<std::pair<Key, T>>
-	{
-	public:
+    template <class Key, class T, class Compare = std::less<Key>>
+    class vecmap : protected std::vector<std::pair<Key, T>>
+    {
+    public:
         typedef std::pair<Key, T> value_type;
         typedef std::vector<value_type> base_type;
 
-	public:
-		typename base_type::iterator begin() { return base_type::begin(); };
-		typename base_type::iterator end() { return base_type::end(); };
-		typename base_type::const_iterator cbegin() const { return base_type::cbegin(); };
-		typename base_type::const_iterator cend() const { return base_type::cend(); };
+    public:
+        typename base_type::iterator begin() { return base_type::begin(); };
+        typename base_type::iterator end() { return base_type::end(); };
+        typename base_type::const_iterator cbegin() const { return base_type::cbegin(); };
+        typename base_type::const_iterator cend() const { return base_type::cend(); };
 
-		vecmap() = default;
-		vecmap(const vecmap&) = default;
-		vecmap(vecmap&&) = default;
-		~vecmap() = default;
+        vecmap() = default;
+        vecmap(const vecmap&) = default;
+        vecmap(vecmap&&) = default;
+        ~vecmap() = default;
 
         /// <summary>
         /// Constructs vecmap instance from initalizer list. Note that if two or more items have same key, only one will be preserved
@@ -41,35 +41,35 @@ namespace Metrics {
             base_type::erase(last, end());
         }
 
-		T& operator[](const Key& key)
-		{
-			auto c = Compare();
-			auto i = std::lower_bound(begin(), end(), key, [&c](const value_type& l, const Key& k) { return c(l.first, k); });
-			if (i == end() || c(key, i->first)) {
-				i = base_type::insert(i, std::make_pair<Key,T>(std::move(Key(key)), T()));
-			}
-			return i->second;
-		}
+        T& operator[](const Key& key)
+        {
+            auto c = Compare();
+            auto i = std::lower_bound(begin(), end(), key, [&c](const value_type& l, const Key& k) { return c(l.first, k); });
+            if (i == end() || c(key, i->first)) {
+                i = base_type::insert(i, std::make_pair<Key, T>(std::move(Key(key)), T()));
+            }
+            return i->second;
+        }
 
-		inline bool operator<(const vecmap<Key, T, Compare>& other) const
-		{
+        inline bool operator<(const vecmap<Key, T, Compare>& other) const
+        {
             // Slicing const reference to use std::vector comparison
-			const base_type& b1 = *this;
-			const base_type& b2 = other;
-			return b1 < b2;
-		}
+            const base_type& b1 = *this;
+            const base_type& b2 = other;
+            return b1 < b2;
+        }
 
-		inline bool operator==(const vecmap<Key, T, Compare>& other) const
-		{
+        inline bool operator==(const vecmap<Key, T, Compare>& other) const
+        {
             // Slicing const reference to use std::vector comparison
-			const base_type& b1 = *this;
-			const base_type& b2 = other;
-			return b1 == b2;
-		}
+            const base_type& b1 = *this;
+            const base_type& b2 = other;
+            return b1 == b2;
+        }
 
-		inline bool operator!=(const vecmap<Key, T, Compare>& other) const
-		{
-			return !(*this == other);
-		}
-	};
+        inline bool operator!=(const vecmap<Key, T, Compare>& other) const
+        {
+            return !(*this == other);
+        }
+    };
 }

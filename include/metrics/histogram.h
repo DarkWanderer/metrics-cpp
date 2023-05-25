@@ -7,7 +7,7 @@
 
 namespace Metrics
 {
-    class IHistogram : public IMetric
+    class IHistogram : public ITypedMetric<TypeCode::Histogram>
     {
     public:
         virtual void observe(double value) = 0;
@@ -19,7 +19,7 @@ namespace Metrics
     };
 
     // Stack-based wrapper for actual metric
-    class Histogram : public IHistogram
+    class Histogram : public ValueProxy<IHistogram>
     {
     private:
         const std::shared_ptr<IHistogram> m_value;
@@ -29,9 +29,9 @@ namespace Metrics
         uint64_t count() override { return m_value->count(); };
         double sum() override { return m_value->sum(); };
 
-        Histogram(std::shared_ptr<IHistogram> value) : m_value(value){};
-        Histogram(const Histogram &other) = default;
-        Histogram(Histogram &&other) = default;
+        Histogram(std::shared_ptr<IHistogram> value) : m_value(value) {};
+        Histogram(const Histogram& other) = default;
+        Histogram(Histogram&& other) = default;
         ~Histogram() = default;
     };
 }

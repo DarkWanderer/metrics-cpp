@@ -3,72 +3,85 @@
 
 #include "factory.h"
 
-#include <map>
+#include <unordered_map>
 #include <mutex>
 #include <stdexcept>
+#include <cstdint>
+#include <functional>
+
 
 namespace Metrics
 {
     struct MetricKeyComparer
     {
-        bool operator()(const Metrics::Key &k1, const Metrics::Key &k2) const
+        // Hash
+        std::uint64_t operator()(const Key& key) const
         {
-            return (k1.name < k2.name) || (k1.labels < k2.labels);
+            std::hash<std::string> h;
+            // computes the hash of an employee using a variant
+            // of the Fowler-Noll-Vo hash function
+            constexpr std::uint64_t prime{ 0x100000001B3 };
+            std::uint64_t result = h(key.name);
+            for (auto it = key.labels.cbegin(); it != key.labels.cend(); it++)
+                result = (result * prime) ^ h(it->first) ^ h(it->second);
+
+            return result;
         }
     };
 
     class RegistryImpl : public IRegistry
     {
-        std::map<Key, std::shared_ptr<IMetric>, MetricKeyComparer> m_metrics;
+    private:
+        mutable std::mutex m_mutex;
+        std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyComparer> m_metrics;
 
-        Gauge getGauge(const Key &key) override
+    public:
+        ~RegistryImpl() {}
+
+
+        template<typename TValueProxy, typename TValue> TValueProxy get(const Key& key, std::function<std::shared_ptr<TValue>(void)> factory)
         {
+            std::unique_lock<std::mutex> lock(m_mutex);
             auto it = m_metrics.find(key);
 
             if (it == m_metrics.end())
             {
-                it = m_metrics.emplace(std::make_pair(key, createGauge())).first;
+                auto new_value = factory();
+                it = m_metrics.emplace(std::move(Key(key)), std::move(new_value)).first;
             }
-            auto metric = std::dynamic_pointer_cast<IGaugeValue>(it->second);
-            if (!metric)
-                throw std::logic_error("Metric exists but is of wrong type");
-            return Gauge(metric);
-        };
 
-        Counter getCounter(const Key &key) override
+            auto metric = it->second;
+            if (TValue::stype() != metric->type())
+                throw std::logic_error("Wrong type of metric");
+
+            return TValueProxy(std::static_pointer_cast<TValue>(metric));
+        }
+
+        Gauge getGauge(const Key& key) override { return get<Gauge, IGaugeValue>(key, createGauge); };
+
+        Counter getCounter(const Key& key) override { return get<Counter, ICounterValue>(key, createCounter); };
+
+        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram, IHistogram>(key, std::bind(createHistogram, bounds)); }
+
+        std::vector<Key> keys() const 
         {
-            auto it = m_metrics.find(key);
-
-            if (it == m_metrics.end())
+            std::vector<Key> keys;
             {
-                it = m_metrics.emplace(std::make_pair(key, createCounter())).first;
+                std::unique_lock<std::mutex> lock(m_mutex);
+                keys.reserve(m_metrics.size());
+                for (const auto kv : m_metrics) {
+                    keys.push_back(kv.first);
+                }
             }
-            auto metric = std::dynamic_pointer_cast<ICounterValue>(it->second);
-            if (!metric)
-                throw std::logic_error("Metric exists but is of wrong type");
-            return Counter(metric);
-        };
-
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override
-        {
-            auto it = m_metrics.find(key);
-
-            if (it == m_metrics.end())
-            {
-                it = m_metrics.emplace(std::make_pair(key, createHistogram(bounds))).first;
-            }
-            auto metric = std::dynamic_pointer_cast<IHistogram>(it->second);
-            if (!metric)
-                throw std::logic_error("Metric exists but is of wrong type");
-            return Histogram(metric);
-        };
+            return keys;
+        }
     };
 
     IRegistry::~IRegistry()
     {
     }
 
-    IRegistry &defaultRegistry()
+    IRegistry& defaultRegistry()
     {
         static RegistryImpl s_registry;
         return s_registry;

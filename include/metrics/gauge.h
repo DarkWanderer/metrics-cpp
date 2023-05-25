@@ -7,7 +7,7 @@
 
 namespace Metrics
 {
-    class IGaugeValue : public IMetric
+    class IGaugeValue : public ITypedMetric<TypeCode::Gauge>
     {
     public:
         virtual IGaugeValue &operator=(double value) = 0;
@@ -23,7 +23,7 @@ namespace Metrics
     };
 
     // Stack-based container referencing actual metric
-    class Gauge : public IGaugeValue
+    class Gauge : public ValueProxy<IGaugeValue>
     {
     private:
         const std::shared_ptr<IGaugeValue> m_value;
