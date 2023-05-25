@@ -36,7 +36,7 @@ TEST_CASE("Counters", "[counter]")
 
 TEST_CASE("Gauges", "[gauge]")
 {
-	auto& registry = Metrics::createRegistry();
+	auto registry = Metrics::createRegistry();
 	auto gauge = registry->getGauge({ "gauge" });
 	REQUIRE(gauge == 0);
 	gauge = 5.0;
@@ -49,7 +49,7 @@ TEST_CASE("Gauges", "[gauge]")
 
 TEST_CASE("Histograms", "[histogram]")
 {
-	auto& registry = Metrics::createRegistry();
+	auto registry = Metrics::createRegistry();
 	auto histogram = registry->getHistogram({ "histogram" }, { 1., 2., 5. });
 	histogram.observe(1);
 	histogram.observe(2);
