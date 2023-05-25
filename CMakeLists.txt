@@ -12,4 +12,7 @@ if(SANITIZE)
 endif()
 
 add_subdirectory(src)
+
+include(CTest)
+enable_testing()
 add_subdirectory(test)
