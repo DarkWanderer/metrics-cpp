@@ -96,13 +96,13 @@ namespace Metrics
 	};
 
 	struct Bucket {
-		double bound;
+		double bound = 0.0;
 		CounterImpl counter;
 	};
 
 	class HistogramImpl : public IHistogram {
 	private:
-		Bucket* m_buckets;
+		std::unique_ptr<Bucket[]> m_buckets;
 		size_t m_bucket_count;
 		CounterImpl m_count;
 		GaugeImpl m_sum;
@@ -110,7 +110,7 @@ namespace Metrics
 		HistogramImpl(const std::vector<double>& bounds)
 		{
 			m_bucket_count = bounds.size();
-			m_buckets = new Bucket[m_bucket_count];
+            m_buckets = std::unique_ptr<Bucket[]>(new Bucket[m_bucket_count]);
 			for (int i = 0; i < m_bucket_count; i++) {
 				m_buckets[i].bound = bounds[i];
 			}
