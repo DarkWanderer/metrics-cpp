@@ -32,13 +32,13 @@ namespace Metrics {
         /// <param name="_items">List of key-value pairs</param>
         vecmap(std::initializer_list<value_type> _items)
         {
-            reserve(_items.size());
+            base_type::reserve(_items.size());
             for (const auto& item : _items)
-                push_back(item);
+                base_type::push_back(item);
             auto c = Compare();
             std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
             auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first) == 0; });
-            erase(last, end());
+            base_type::erase(last, end());
         }
 
 		T& operator[](const Key& key)
@@ -46,7 +46,7 @@ namespace Metrics {
 			auto c = Compare();
 			auto i = std::lower_bound(begin(), end(), key, [&c](const value_type& l, const Key& k) { return c(l.first, k); });
 			if (i == end() || c(key, i->first)) {
-				i = insert(i, std::make_pair<Key,T>(std::move(Key(key)), T()));
+				i = base_type::insert(i, std::make_pair<Key,T>(std::move(Key(key)), T()));
 			}
 			return i->second;
 		}
