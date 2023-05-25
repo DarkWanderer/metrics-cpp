@@ -5,6 +5,7 @@
 
 #include <map>
 #include <mutex>
+#include <stdexcept>
 
 namespace Metrics
 {
@@ -12,7 +13,7 @@ namespace Metrics
     {
         bool operator()(const Metrics::Key &k1, const Metrics::Key &k2) const
         {
-            return k1.name < k2.name || k1.labels < k2.labels;
+            return (k1.name < k2.name) || (k1.labels < k2.labels);
         }
     };
 
@@ -30,7 +31,7 @@ namespace Metrics
             }
             auto metric = std::dynamic_pointer_cast<IGaugeValue>(it->second);
             if (!metric)
-                throw std::exception("Metric exists but is of wrong type");
+                throw std::logic_error("Metric exists but is of wrong type");
             return Gauge(metric);
         };
 
@@ -44,7 +45,7 @@ namespace Metrics
             }
             auto metric = std::dynamic_pointer_cast<ICounterValue>(it->second);
             if (!metric)
-                throw std::exception("Metric exists but is of wrong type");
+                throw std::logic_error("Metric exists but is of wrong type");
             return Counter(metric);
         };
 
@@ -58,10 +59,14 @@ namespace Metrics
             }
             auto metric = std::dynamic_pointer_cast<IHistogram>(it->second);
             if (!metric)
-                throw std::exception("Metric exists but is of wrong type");
+                throw std::logic_error("Metric exists but is of wrong type");
             return Histogram(metric);
         };
     };
+
+    IRegistry::~IRegistry()
+    {
+    }
 
     IRegistry &defaultRegistry()
     {
@@ -69,8 +74,8 @@ namespace Metrics
         return s_registry;
     }
 
-    METRICS_EXPORT std::unique_ptr<IRegistry> Metrics::createRegistry()
+    METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry()
     {
-        return std::make_unique<RegistryImpl>();
+        return std::unique_ptr<IRegistry>(new RegistryImpl());
     };
 }
