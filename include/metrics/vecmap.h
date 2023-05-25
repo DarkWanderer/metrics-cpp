@@ -34,7 +34,7 @@ namespace Metrics {
 			auto c = Compare();
 			std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
 			if (std::adjacent_find(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first) == 0; }) != end())
-				throw std::exception("Non-unique keys in arguments");
+				throw std::runtime_error("Duplicate keys");
 		}
 
 		T& operator[](const Key& key)
