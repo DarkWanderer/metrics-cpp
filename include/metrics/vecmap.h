@@ -47,23 +47,22 @@ namespace Metrics {
 			return i->second;
 		}
 
-		template <class Key, class T, class Compare = std::less<Key>>
 		inline bool operator<(const vecmap<Key, T, Compare>& other) const
 		{
-			const vecmap<Key, T, Compare>::base_type& b1 = *this;
-			const vecmap<Key, T, Compare>::base_type& b2 = other;
+            // Slicing const reference to use std::vector comparison
+			const base_type& b1 = *this;
+			const base_type& b2 = other;
 			return b1 < b2;
 		}
 
-		template <class Key, class T, class Compare = std::less<Key>>
 		inline bool operator==(const vecmap<Key, T, Compare>& other) const
 		{
-			const vecmap<Key, T, Compare>::base_type& b1 = *this;
-			const vecmap<Key, T, Compare>::base_type& b2 = other;
+            // Slicing const reference to use std::vector comparison
+			const base_type& b1 = *this;
+			const base_type& b2 = other;
 			return b1 == b2;
 		}
 
-		template <class Key, class T, class Compare = std::less<Key>>
 		inline bool operator!=(const vecmap<Key, T, Compare>& other) const
 		{
 			return !(*this == other);
