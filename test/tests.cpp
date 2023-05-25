@@ -18,7 +18,7 @@ TEST_CASE("Labels", "[labels]")
 	l3["c"] = "d";
 	REQUIRE((l1 == l3));
 
-	CHECK_THROWS(Metrics::Labels{ {"a", "a1"}, {"a", "a2"} });
+	REQUIRE((Metrics::Labels{ {"a", "a1"}, {"a", "a2"} } == Metrics::Labels{ {"a", "a1"} }));
 }
 
 TEST_CASE("Counters", "[counter]")

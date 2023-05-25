@@ -26,16 +26,20 @@ namespace Metrics {
 		vecmap(vecmap&&) = default;
 		~vecmap() = default;
 
-		vecmap(std::initializer_list<value_type> _items)
-		{
-			reserve(_items.size());
-			for (const auto& item : _items)
-				push_back(item);
-			auto c = Compare();
-			std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
-			if (std::adjacent_find(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first) == 0; }) != end())
-				throw std::runtime_error("Duplicate keys");
-		}
+        /// <summary>
+        /// Constructs vecmap instance from initalizer list. Note that if two or more items have same key, only one will be preserved
+        /// </summary>
+        /// <param name="_items">List of key-value pairs</param>
+        vecmap(std::initializer_list<value_type> _items)
+        {
+            reserve(_items.size());
+            for (const auto& item : _items)
+                push_back(item);
+            auto c = Compare();
+            std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
+            auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first) == 0; });
+            erase(last, end());
+        }
 
 		T& operator[](const Key& key)
 		{
