@@ -12,8 +12,8 @@ namespace Metrics {
 	class vecmap : protected std::vector<std::pair<Key, T>>
 	{
 	public:
-		typedef std::vector<value_type> base_type;
-		typedef std::pair<Key, T> value_type;
+        typedef std::pair<Key, T> value_type;
+        typedef std::vector<value_type> base_type;
 
 	public:
 		typename base_type::iterator begin() { return base_type::begin(); };
