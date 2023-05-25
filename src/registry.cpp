@@ -74,7 +74,7 @@ namespace Metrics
         return s_registry;
     }
 
-    METRICS_EXPORT std::unique_ptr<IRegistry> Metrics::createRegistry()
+    METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry()
     {
         return std::unique_ptr<IRegistry>(new RegistryImpl());
     };
