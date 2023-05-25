@@ -63,6 +63,10 @@ namespace Metrics
         };
     };
 
+    IRegistry::~IRegistry()
+    {
+    }
+
     IRegistry &defaultRegistry()
     {
         static RegistryImpl s_registry;

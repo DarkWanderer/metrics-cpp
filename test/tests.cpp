@@ -23,7 +23,7 @@ TEST_CASE("Labels", "[labels]")
 
 TEST_CASE("Counters", "[counter]")
 {
-	auto& registry = Metrics::createRegistry();
+	auto registry = Metrics::createRegistry();
 	auto counter = registry->getCounter({ "counter" });
 	REQUIRE(counter == 0);
 	counter++;
