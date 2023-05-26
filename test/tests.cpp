@@ -28,10 +28,22 @@ TEST_CASE("Counters", "[metric][counter]")
     REQUIRE(counter == 0);
     counter++;
     REQUIRE(counter == 1);
+
+    auto counter2 = counter;
+    auto counter3(counter);
+    auto counter4{ counter };
+
     counter += 99;
     REQUIRE(counter == 100);
+    REQUIRE(counter2 == 100);
+    REQUIRE(counter3 == 100);
+    REQUIRE(counter4 == 100);
+
     counter.reset();
     REQUIRE(counter == 0);
+    REQUIRE(counter2 == 0);
+    REQUIRE(counter3 == 0);
+    REQUIRE(counter4 == 0);
 }
 
 TEST_CASE("Gauges", "[metric][gauge]")
@@ -40,7 +52,16 @@ TEST_CASE("Gauges", "[metric][gauge]")
     auto gauge = registry->getGauge({ "gauge" });
     REQUIRE(gauge == 0);
     gauge = 5.0;
+
+    auto gauge2 = gauge;
+    auto gauge3(gauge);
+    auto gauge4{ gauge };
+
     REQUIRE(gauge == 5.0);
+    REQUIRE(gauge2 == 5.0);
+    REQUIRE(gauge3 == 5.0);
+    REQUIRE(gauge4 == 5.0);
+
     gauge += 3.0;
     REQUIRE(gauge == 8.0);
     gauge -= 5.0;
@@ -79,7 +100,7 @@ TEST_CASE("Registry", "[registry]")
     CHECK_THROWS(registry->getCounter({ "gauge1" }));
     CHECK_THROWS(registry->getHistogram({ "counter1" }));
 
-    auto contains = [](std::vector<Metrics::Key> container, Metrics::Key key) 
+    auto contains = [](std::vector<Metrics::Key> container, Metrics::Key key)
     {
         for (const auto& k : container)
             if (k == key)

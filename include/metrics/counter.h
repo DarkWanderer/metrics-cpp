@@ -18,8 +18,6 @@ namespace Metrics
 
     protected:
         METRICS_EXPORT virtual ~ICounterValue() = 0;
-        ICounterValue() noexcept = default;
-        ICounterValue(ICounterValue&&) noexcept = default;
     };
 
     // Stack-based wrapper for actual metric

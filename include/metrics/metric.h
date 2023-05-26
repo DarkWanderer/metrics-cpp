@@ -17,9 +17,6 @@ namespace Metrics
     class IMetric
     {
     public:
-        IMetric() = default;
-        IMetric(const IMetric &) = default;
-        IMetric(IMetric &&) = default;
         METRICS_EXPORT virtual ~IMetric() = default;
         virtual TypeCode type() = 0;
     };
