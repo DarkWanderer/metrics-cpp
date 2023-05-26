@@ -99,6 +99,10 @@ namespace Metrics
     struct Bucket {
         double bound = 0.0;
         CounterImpl counter;
+
+        Bucket() = default;
+        Bucket(Bucket&&) = default;
+        Bucket(const Bucket&) = delete;
     };
 
     class HistogramImpl : public IHistogram {
@@ -112,13 +116,15 @@ namespace Metrics
         {
             m_bucket_count = bounds.size();
             m_buckets = std::unique_ptr<Bucket[]>(new Bucket[m_bucket_count]);
-            for (int i = 0; i < m_bucket_count; i++) {
+            for (size_t i = 0; i < m_bucket_count; i++) {
                 m_buckets[i].bound = bounds[i];
             }
         }
 
+        HistogramImpl(const HistogramImpl&) = delete;
+
         void observe(double value) override {
-            for (int i = 0; i < m_bucket_count; i++)
+            for (size_t i = 0; i < m_bucket_count; i++)
             {
                 auto& bucket = m_buckets[i];
                 if (bucket.bound >= value)
