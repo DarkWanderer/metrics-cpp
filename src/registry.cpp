@@ -3,7 +3,7 @@
 
 #include "factory.h"
 
-#include <unordered_map>
+#include <map>
 #include <mutex>
 #include <stdexcept>
 #include <cstdint>
@@ -12,7 +12,7 @@
 
 namespace Metrics
 {
-    struct MetricKeyComparer
+    struct MetricKeyHasher
     {
         // Hash
         std::uint64_t operator()(const Key& key) const
@@ -33,7 +33,8 @@ namespace Metrics
     {
     private:
         mutable std::mutex m_mutex;
-        std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyComparer> m_metrics;
+        // std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
+        std::map<Key, std::shared_ptr<IMetric>> m_metrics;
 
     public:
         ~RegistryImpl() {}
@@ -69,7 +70,7 @@ namespace Metrics
             {
                 std::unique_lock<std::mutex> lock(m_mutex);
                 keys.reserve(m_metrics.size());
-                for (const auto kv : m_metrics) {
+                for (const auto& kv : m_metrics) {
                     keys.push_back(kv.first);
                 }
             }
