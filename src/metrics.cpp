@@ -1,12 +1,10 @@
 #include <metrics/gauge.h>
 #include <metrics/counter.h>
-#include <metrics/summary.h>
 #include <metrics/histogram.h>
 
 #include <atomic>
 #include <vector>
 #include <map>
-// #include <metrics/vecmap.h>
 
 namespace Metrics
 {
@@ -73,6 +71,7 @@ namespace Metrics
 
     public:
         CounterImpl() noexcept { m_value.store(0); };
+        CounterImpl(uint64_t value) noexcept { m_value.store(value); };
         CounterImpl(CounterImpl&& other) = delete;
         CounterImpl(const CounterImpl&) = delete;
         ~CounterImpl() = default;
@@ -97,42 +96,64 @@ namespace Metrics
     };
 
     struct Bucket {
-        double bound = 0.0;
-        CounterImpl counter;
+        Bucket(double bound) : bound(bound) {};
+
+        const double bound = 0.0;
+        mutable CounterImpl counter;
 
         Bucket() = default;
-        Bucket(Bucket&&) = default;
+        Bucket(Bucket&& other) noexcept :
+            bound(other.bound),
+            counter(other.counter.value())
+        {
+        }
         Bucket(const Bucket&) = delete;
     };
 
     class HistogramImpl : public IHistogram {
     private:
-        std::unique_ptr<Bucket[]> m_buckets;
-        size_t m_bucket_count;
+        const std::vector<Bucket> m_buckets;
         CounterImpl m_count;
         GaugeImpl m_sum;
-    public:
-        HistogramImpl(const std::vector<double>& bounds)
+
+        std::vector<Bucket> createBuckets(const std::vector<double>& bounds)
         {
-            m_bucket_count = bounds.size();
-            m_buckets = std::unique_ptr<Bucket[]>(new Bucket[m_bucket_count]);
-            for (size_t i = 0; i < m_bucket_count; i++) {
-                m_buckets[i].bound = bounds[i];
-            }
+            const auto size = bounds.size();
+            std::vector<Bucket> result;
+            result.reserve(size);
+            for (auto bound : bounds)
+                result.emplace_back(bound);
+            return result;
+        }
+
+    public:
+        HistogramImpl(const std::vector<double>& bounds) :
+            m_buckets(createBuckets(bounds))
+        {
         }
 
         HistogramImpl(const HistogramImpl&) = delete;
 
         void observe(double value) override {
-            for (size_t i = 0; i < m_bucket_count; i++)
+            for (const auto& bucket: m_buckets)
             {
-                auto& bucket = m_buckets[i];
                 if (bucket.bound >= value)
                     bucket.counter++;
             }
             m_count++;
             m_sum += value;
         }
+
+        std::vector<std::pair<double, uint64_t>> values() override
+        {
+            std::vector<std::pair<double, uint64_t>> result;
+            result.reserve(m_buckets.size());
+            for (const auto& bucket: m_buckets)
+            {
+                result.emplace_back(bucket.bound, bucket.counter.value());
+            }
+            return result;
+        };
 
         uint64_t count() override { return m_count; };
         double sum() override { return m_sum; };
