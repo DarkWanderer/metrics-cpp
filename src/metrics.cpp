@@ -157,6 +157,7 @@ namespace Metrics
         double sum() override { return m_sum; };
     };
 
+    // Definitions for functions referenced in registry.cpp
     std::shared_ptr<ICounterValue> createCounter() { return std::make_shared<CounterImpl>(); };
     std::shared_ptr<IGaugeValue> createGauge() { return std::make_shared<GaugeImpl>(); };
     std::shared_ptr<IHistogram> createHistogram(const std::vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };

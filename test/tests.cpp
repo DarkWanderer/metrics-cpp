@@ -90,28 +90,30 @@ struct nocopy {
 
 TEST_CASE("Registry", "[registry]")
 {
-    auto registry = Metrics::createRegistry();
-    auto c1 = registry->getCounter({ "counter1" });
-    auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
-    auto g1 = registry->getGauge({ "gauge1" });
-    auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
-
-    CHECK_THROWS(registry->getGauge({ "counter1" }));
-    CHECK_THROWS(registry->getCounter({ "gauge1" }));
-    CHECK_THROWS(registry->getHistogram({ "counter1" }));
-
-    auto contains = [](std::vector<Metrics::Key> container, Metrics::Key key)
+    for (auto& registry : { Metrics::createRegistry(), Metrics::createLargeRegistry() }) 
     {
-        for (const auto& k : container)
-            if (k == key)
-                return true;
-        return false;
-    };
+        auto c1 = registry->getCounter({ "counter1" });
+        auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
+        auto g1 = registry->getGauge({ "gauge1" });
+        auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
 
-    auto keys = registry->keys();
+        CHECK_THROWS(registry->getGauge({ "counter1" }));
+        CHECK_THROWS(registry->getCounter({ "gauge1" }));
+        CHECK_THROWS(registry->getHistogram({ "counter1" }));
 
-    REQUIRE((contains(keys, { "counter1" })));
-    REQUIRE((contains(keys, { "counter2", { { "some", "label" } } })));
-    REQUIRE((contains(keys, { "gauge1" })));
-    REQUIRE((contains(keys, { "gauge2", {{"other", "label"}} })));
+        auto contains = [](std::vector<Metrics::Key> container, Metrics::Key key)
+        {
+            for (const auto& k : container)
+                if (k == key)
+                    return true;
+            return false;
+        };
+
+        auto keys = registry->keys();
+
+        REQUIRE((contains(keys, { "counter1" })));
+        REQUIRE((contains(keys, { "counter2", { { "some", "label" } } })));
+        REQUIRE((contains(keys, { "gauge1" })));
+        REQUIRE((contains(keys, { "gauge2", {{"other", "label"}} })));
+    }
 }
