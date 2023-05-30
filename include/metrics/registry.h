@@ -1,9 +1,7 @@
 #pragma once
 
 #include <metrics_export.h>
-#include <metrics/counter.h>
-#include <metrics/gauge.h>
-#include <metrics/histogram.h>
+#include <metrics/metric.h>
 
 #include <vector>
 

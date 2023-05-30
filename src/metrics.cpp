@@ -1,6 +1,4 @@
-#include <metrics/gauge.h>
-#include <metrics/counter.h>
-#include <metrics/histogram.h>
+#include <metrics/metric.h>
 
 #include <atomic>
 #include <vector>
