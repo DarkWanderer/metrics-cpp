@@ -40,4 +40,5 @@ namespace Metrics
 
     METRICS_EXPORT IRegistry& defaultRegistry();
     METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry();
+    METRICS_EXPORT std::unique_ptr<IRegistry> createLargeRegistry();
 }
