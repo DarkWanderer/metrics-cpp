@@ -1,6 +1,4 @@
-#include <metrics/gauge.h>
-#include <metrics/counter.h>
-#include <metrics/histogram.h>
+#include <metrics/metric.h>
 
 #include <atomic>
 #include <vector>
@@ -135,7 +133,7 @@ namespace Metrics
         HistogramImpl(const HistogramImpl&) = delete;
 
         void observe(double value) override {
-            for (const auto& bucket: m_buckets)
+            for (const auto& bucket : m_buckets)
             {
                 if (bucket.bound >= value)
                     bucket.counter++;
@@ -148,7 +146,7 @@ namespace Metrics
         {
             std::vector<std::pair<double, uint64_t>> result;
             result.reserve(m_buckets.size());
-            for (const auto& bucket: m_buckets)
+            for (const auto& bucket : m_buckets)
             {
                 result.emplace_back(bucket.bound, bucket.counter.value());
             }

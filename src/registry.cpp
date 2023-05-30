@@ -33,12 +33,12 @@ namespace Metrics
     {
     private:
         mutable std::mutex m_mutex;
-        // std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
+        // Assumption: expected metrics count per registry is in order of hundreds, not hundred thousands
         std::map<Key, std::shared_ptr<IMetric>> m_metrics;
+        // std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
 
     public:
         ~RegistryImpl() {}
-
 
         template<typename TValueProxy, typename TValue> TValueProxy get(const Key& key, std::function<std::shared_ptr<TValue>(void)> factory)
         {
@@ -64,7 +64,7 @@ namespace Metrics
 
         Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram, IHistogram>(key, std::bind(createHistogram, bounds)); }
 
-        std::vector<Key> keys() const 
+        std::vector<Key> keys() const
         {
             std::vector<Key> keys;
             {
@@ -75,6 +75,12 @@ namespace Metrics
                 }
             }
             return keys;
+        }
+
+        virtual bool add(const Key& key, std::shared_ptr<IMetric> metric) override
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            return m_metrics.emplace(key, metric).second;
         }
     };
 
