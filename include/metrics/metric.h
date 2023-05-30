@@ -33,20 +33,4 @@ namespace Metrics
     public:
         typedef Value value_type;
     };
-
-    struct Key
-    {
-        std::string name;
-        Labels labels;
-
-        bool operator==(const Metrics::Key& other) const { return name == other.name && labels == other.labels; }
-        
-        bool operator<(const Metrics::Key& other) const 
-        { 
-            auto c1 = name.compare(other.name);
-            if (c1 != 0)
-                return c1 < 0;
-            return labels < other.labels;
-        }
-    };
 }

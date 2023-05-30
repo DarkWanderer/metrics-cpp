@@ -36,5 +36,7 @@ namespace Metrics
         Histogram(const Histogram& other) = default;
         Histogram(Histogram&& other) = default;
         ~Histogram() = default;
+
+        std::shared_ptr<IMetric> raw() { return m_value; }
     };
 }
