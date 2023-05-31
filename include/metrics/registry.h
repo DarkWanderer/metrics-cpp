@@ -9,8 +9,8 @@ namespace Metrics
 {
     struct Key
     {
-        std::string name;
-        Labels labels;
+        const std::string name;
+        const Labels labels;
 
         bool operator==(const Metrics::Key& other) const { return name == other.name && labels == other.labels; }
 
