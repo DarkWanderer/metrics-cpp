@@ -8,12 +8,12 @@
 // Based on public domain code from https://github.com/michaeljclark/vecmap/blob/master/src/vecmap.h
 
 namespace Metrics {
-    template <class Key, class T, class Compare = std::less<Key>>
-    class vecmap : protected std::vector<std::pair<Key, T>>
+    template <class TKey, class TValue, class Compare = std::less<TKey>>
+    class vecmap : protected std::vector<std::pair<TKey, TValue>>
     {
     public:
-        typedef std::pair<Key, T> value_type;
-        typedef std::vector<value_type> base_type;
+        using value_type = std::pair<TKey, TValue>;
+        using base_type = std::vector<value_type>;
 
     public:
         typename base_type::iterator begin() { return base_type::begin(); };
@@ -37,21 +37,21 @@ namespace Metrics {
                 base_type::push_back(item);
             auto c = Compare();
             std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
-            auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first) == 0; });
+            auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return !c(v1.first, v2.first); });
             base_type::erase(last, end());
         }
 
-        T& operator[](const Key& key)
+        TValue& operator[](const TKey& key)
         {
             auto c = Compare();
-            auto i = std::lower_bound(begin(), end(), key, [&c](const value_type& l, const Key& k) { return c(l.first, k); });
+            auto i = std::lower_bound(begin(), end(), key, [&c](const value_type& l, const TKey& k) { return c(l.first, k); });
             if (i == end() || c(key, i->first)) {
-                i = base_type::insert(i, std::make_pair<Key, T>(std::move(Key(key)), T()));
+                i = base_type::insert(i, std::make_pair<TKey, TValue>(std::move(TKey(key)), TValue()));
             }
             return i->second;
         }
 
-        inline bool operator<(const vecmap<Key, T, Compare>& other) const
+        inline bool operator<(const vecmap<TKey, TValue, Compare>& other) const
         {
             // Slicing const reference to use std::vector comparison
             const base_type& b1 = *this;
@@ -59,7 +59,7 @@ namespace Metrics {
             return b1 < b2;
         }
 
-        inline bool operator==(const vecmap<Key, T, Compare>& other) const
+        inline bool operator==(const vecmap<TKey, TValue, Compare>& other) const
         {
             // Slicing const reference to use std::vector comparison
             const base_type& b1 = *this;
@@ -67,7 +67,7 @@ namespace Metrics {
             return b1 == b2;
         }
 
-        inline bool operator!=(const vecmap<Key, T, Compare>& other) const
+        inline bool operator!=(const vecmap<TKey, TValue, Compare>& other) const
         {
             return !(*this == other);
         }
