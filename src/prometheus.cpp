@@ -9,11 +9,10 @@ using std::endl;
 
 namespace Metrics
 {
-    ostream& operator<<(ostream& os, const Key& key)
+    ostream& operator<<(ostream& os, const Labels& labels)
     {
-        os << key.name;
         bool opened = false;
-        for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+        for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
         {
             os << (opened ? "," : "{") << kv->first << "=\"" << kv->second << '"';
             opened = true;
@@ -21,6 +20,28 @@ namespace Metrics
         if (opened)
             os << '}';
         return os;
+    }
+
+    ostream& operator<<(ostream& os, const Key& key)
+    {
+        os << key.name;
+        os << key.labels;
+        return os;
+    }
+
+    void writeHistogram(ostream& os, const Key& key, const IHistogram& histogram)
+    {
+        for (auto value : histogram.values())
+        {
+            os << key.name << '{';
+            for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+            {
+                os << kv->first << "=\"" << kv->second << '"' << ',';
+            }
+            os << "le=\"" << value.first << "\"} " << value.second << endl;
+        }
+        os << key.name << "_sum" << key.labels << ' ' << histogram.sum() << endl;
+        os << key.name << "_count" << key.labels << ' ' << histogram.count() << endl;
     }
 
     ostream& operator<<(ostream& os, const IRegistry& registry)
@@ -34,13 +55,15 @@ namespace Metrics
             switch (metric->type())
             {
             case TypeCode::Counter:
-                os << key << ' ' << std::static_pointer_cast<ICounterValue>(metric)->value();
+                os << key << ' ' << std::static_pointer_cast<ICounterValue>(metric)->value() << endl;
                 break;
             case TypeCode::Gauge:
-                os << key << ' ' << std::static_pointer_cast<IGaugeValue>(metric)->value();
+                os << key << ' ' << std::static_pointer_cast<IGaugeValue>(metric)->value() << endl;
+                break;
+            case TypeCode::Histogram:
+                writeHistogram(os, key, *std::static_pointer_cast<IHistogram>(metric));
                 break;
             }
-            os << endl;
         }
         return os;
     }

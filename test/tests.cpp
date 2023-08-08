@@ -121,22 +121,37 @@ TEST_CASE("Registry", "[registry]")
 }
 
 using Catch::Matchers::ContainsSubstring;
-TEST_CASE("Prometheus", "[prometheus]")
+
+TEST_CASE("Prometheus", "[prometheus][counter][gauge][histogram]")
 {
     auto registry = Metrics::createRegistry();
     auto c1 = registry->getCounter({ "counter1" });
     auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
     auto g1 = registry->getGauge({ "gauge1" });
     auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
+    auto h1 = registry->getHistogram({ "histogram1" }, { 1., 2., 5. });
+    auto h2 = registry->getHistogram({ "histogram2", {{"more", "labels"}} }, { 1., 2., 5. });
 
     c1 += 5;
     c2 += 10;
     g1 = 123;
     g2 = 321;
+    h1.observe(1);
+    h1.observe(2);
+    h2.observe(1);
+    h2.observe(2);
 
     auto result = serializeToPrometheus(*registry);
     REQUIRE_THAT(result, ContainsSubstring("counter1 5"));
     REQUIRE_THAT(result, ContainsSubstring("counter2{some=\"label\"} 10"));
+
     REQUIRE_THAT(result, ContainsSubstring("gauge1 123"));
     REQUIRE_THAT(result, ContainsSubstring("gauge2{other=\"label\"} 321"));
+
+    REQUIRE_THAT(result, ContainsSubstring("histogram1{le=\"1\"} 1"));
+    REQUIRE_THAT(result, ContainsSubstring("histogram1_sum 3"));
+    REQUIRE_THAT(result, ContainsSubstring("histogram1_count 2"));
+    REQUIRE_THAT(result, ContainsSubstring("histogram2{more=\"labels\",le=\"5\"} 2"));
+    REQUIRE_THAT(result, ContainsSubstring("histogram2_sum{more=\"labels\"} 3"));
+    REQUIRE_THAT(result, ContainsSubstring("histogram2_count{more=\"labels\"} 2"));
 }

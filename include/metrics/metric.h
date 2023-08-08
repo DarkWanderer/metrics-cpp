@@ -45,7 +45,7 @@ namespace Metrics
         virtual ICounterValue& operator+=(uint32_t value) = 0;
         virtual uint64_t value() const = 0;
         virtual void reset() = 0;
-        operator uint64_t() { return value(); };
+        operator uint64_t() const { return value(); };
 
     protected:
         METRICS_EXPORT virtual ~ICounterValue() = 0;
@@ -57,8 +57,8 @@ namespace Metrics
         virtual IGaugeValue& operator=(double value) = 0;
         virtual IGaugeValue& operator+=(double value) = 0;
         virtual IGaugeValue& operator-=(double value) = 0;
-        virtual double value() = 0;
-        operator double() { return value(); };
+        virtual double value() const = 0;
+        operator double() const { return value(); };
 
     protected:
         METRICS_EXPORT virtual ~IGaugeValue() = 0;
@@ -68,9 +68,9 @@ namespace Metrics
     {
     public:
         virtual void observe(double value) = 0;
-        virtual uint64_t count() = 0;
-        virtual double sum() = 0;
-        virtual std::vector<std::pair<double, uint64_t>> values() = 0;
+        virtual uint64_t count() const = 0;
+        virtual double sum() const = 0;
+        virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
 
     protected:
         METRICS_EXPORT virtual ~IHistogram() = 0;
@@ -118,7 +118,7 @@ namespace Metrics
             *m_value -= value;
             return *this;
         };
-        double value() override { return m_value->value(); };
+        double value() const override { return m_value->value(); };
 
         Gauge(std::shared_ptr<IGaugeValue> value) : m_value(value) {};
         Gauge(const Gauge& other) = default;
@@ -134,9 +134,9 @@ namespace Metrics
 
     public:
         void observe(double value) override { m_value->observe(value); };
-        uint64_t count() override { return m_value->count(); };
-        double sum() override { return m_value->sum(); };
-        std::vector<std::pair<double, uint64_t>> values() override { return m_value->values(); };
+        uint64_t count() const override { return m_value->count(); };
+        double sum() const override { return m_value->sum(); };
+        std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
 
         Histogram(std::shared_ptr<IHistogram> value) : m_value(value) {};
         Histogram(const Histogram& other) = default;

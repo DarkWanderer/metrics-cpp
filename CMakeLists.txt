@@ -11,6 +11,9 @@ if(SANITIZE)
   enable_sanitizer(${SANITIZE})
 endif()
 
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+
 add_subdirectory(src)
 
 include(CTest)

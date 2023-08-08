@@ -56,7 +56,7 @@ namespace Metrics
             return *this;
         };
 
-        double value() override
+        double value() const override
         {
             return m_value.load();
         }
@@ -142,7 +142,7 @@ namespace Metrics
             m_sum += value;
         }
 
-        std::vector<std::pair<double, uint64_t>> values() override
+        std::vector<std::pair<double, uint64_t>> values() const override
         {
             std::vector<std::pair<double, uint64_t>> result;
             result.reserve(m_buckets.size());
@@ -153,8 +153,8 @@ namespace Metrics
             return result;
         };
 
-        uint64_t count() override { return m_count; };
-        double sum() override { return m_sum; };
+        uint64_t count() const override { return m_count; };
+        double sum() const override { return m_sum; };
     };
 
     // Definitions for functions referenced in registry.cpp
