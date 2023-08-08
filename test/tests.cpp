@@ -90,7 +90,7 @@ struct nocopy {
 
 TEST_CASE("Registry", "[registry]")
 {
-    for (auto& registry : { Metrics::createRegistry(), Metrics::createLargeRegistry() }) 
+    for (auto& registry : { Metrics::createRegistry(), Metrics::createLargeRegistry() })
     {
         auto c1 = registry->getCounter({ "counter1" });
         auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });

@@ -44,7 +44,7 @@ namespace Metrics
     public:
         ~RegistryImpl() {}
 
-        template<typename TValueProxy, typename TValue> TValueProxy get(const Key& key, std::function<std::shared_ptr<TValue>(void)> factory)
+        template<typename TValueProxy> TValueProxy get(const Key& key, std::function<std::shared_ptr<typename TValueProxy::value_type>(void)> factory)
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             auto it = m_metrics.find(key);
@@ -56,17 +56,17 @@ namespace Metrics
             }
 
             auto metric = it->second;
-            if (TValue::stype() != metric->type())
-                throw std::logic_error("Wrong type of metric");
+            if (TValueProxy::value_type::stype() != metric->type())
+                throw std::logic_error("Inconsistent type of metric");
 
-            return TValueProxy(std::static_pointer_cast<TValue>(metric));
+            return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
         }
 
-        Gauge getGauge(const Key& key) override { return get<Gauge, IGaugeValue>(key, createGauge); };
+        Gauge getGauge(const Key& key) override { return get<Gauge>(key, createGauge); };
 
-        Counter getCounter(const Key& key) override { return get<Counter, ICounterValue>(key, createCounter); };
+        Counter getCounter(const Key& key) override { return get<Counter>(key, createCounter); };
 
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram, IHistogram>(key, std::bind(createHistogram, bounds)); }
+        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(createHistogram, bounds)); }
 
         std::vector<Key> keys() const
         {
