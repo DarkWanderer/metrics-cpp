@@ -42,6 +42,7 @@ namespace Metrics
         // std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
 
     public:
+        RegistryImpl() = default;
         ~RegistryImpl() {}
 
         template<typename TValueProxy> TValueProxy get(const Key& key, std::function<std::shared_ptr<typename TValueProxy::value_type>(void)> factory)
@@ -86,6 +87,16 @@ namespace Metrics
             std::unique_lock<std::mutex> lock(m_mutex);
             return m_metrics.emplace(key, metric).second;
         }
+
+        virtual std::shared_ptr<IMetric> get(const Key& key) const override
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            auto it = m_metrics.find(key);
+            if (it != m_metrics.end())
+                return it->second;
+            else
+                return nullptr;
+        }
     };
 
     class LargeRegistryImpl : public IRegistry
@@ -95,6 +106,7 @@ namespace Metrics
         std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
 
     public:
+        LargeRegistryImpl() = default;
         ~LargeRegistryImpl() {}
 
         template<typename TValueProxy, typename TValue> TValueProxy get(const Key& key, std::function<std::shared_ptr<TValue>(void)> factory)
@@ -138,6 +150,16 @@ namespace Metrics
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             return m_metrics.emplace(key, metric).second;
+        }
+
+        virtual std::shared_ptr<IMetric> get(const Key& key) const override
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            auto it = m_metrics.find(key);
+            if (it != m_metrics.end())
+                return it->second;
+            else
+                return nullptr;
         }
     };
 

@@ -26,6 +26,7 @@ namespace Metrics
     class IRegistry
     {
     public:
+        virtual std::shared_ptr<IMetric> get(const Key& key) const = 0;
         virtual Gauge getGauge(const Key& key) = 0;
         virtual Counter getCounter(const Key& key) = 0;
         virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = {}) = 0;

@@ -51,6 +51,8 @@ namespace Metrics {
             return i->second;
         }
 
+        inline size_t size() const { return base_type::size(); }
+
         inline bool operator<(const vecmap<TKey, TValue, Compare>& other) const
         {
             // Slicing const reference to use std::vector comparison
