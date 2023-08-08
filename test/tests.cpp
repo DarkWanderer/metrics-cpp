@@ -175,7 +175,7 @@ TEST_CASE("Prometheus.Counter", "[prometheus][counter]")
     REQUIRE_THAT(result, ContainsSubstring("counter2{some=\"label\"} 10"));
 }
 
-TEST_CASE("Prometheus.Gauge", "[prometheus][counter]")
+TEST_CASE("Prometheus.Gauge", "[prometheus][gauge]")
 {
     auto registry = getRegistryWithGauge();
     auto result = serializePrometheus(*registry);
@@ -184,7 +184,7 @@ TEST_CASE("Prometheus.Gauge", "[prometheus][counter]")
     REQUIRE_THAT(result, ContainsSubstring("gauge2{other=\"label\"} 321"));
 }
 
-TEST_CASE("Prometheus.Histogram", "[prometheus][counter]")
+TEST_CASE("Prometheus.Histogram", "[prometheus][histogram]")
 {
     auto registry = getRegistryWithHistogram();
     auto result = serializePrometheus(*registry);

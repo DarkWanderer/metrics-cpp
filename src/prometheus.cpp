@@ -70,15 +70,19 @@ namespace Metrics
             switch (metric->type())
             {
             case TypeCode::Counter:
+                // os << "# TYPE " << key.name << " counter" << endl;
                 os << key << ' ' << std::static_pointer_cast<ICounterValue>(metric)->value() << endl;
                 break;
             case TypeCode::Gauge:
+                // os << "# TYPE " << key.name << " gauge" << endl;
                 os << key << ' ' << std::static_pointer_cast<IGaugeValue>(metric)->value() << endl;
                 break;
             case TypeCode::Summary:
+                os << "# TYPE " << key.name << " summary" << endl;
                 write(os, key, *std::static_pointer_cast<ISummary>(metric));
                 break;
             case TypeCode::Histogram:
+                os << "# TYPE " << key.name << " histogram" << endl;
                 write(os, key, *std::static_pointer_cast<IHistogram>(metric));
                 break;
             }
