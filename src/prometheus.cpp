@@ -68,7 +68,7 @@ namespace Metrics
         return os;
     }
 
-    std::string Metrics::serializeToPrometheus(const IRegistry& registry)
+    std::string serializeToPrometheus(const IRegistry& registry)
     {
         stringstream ss;
         ss << registry;
