@@ -1,6 +1,8 @@
 #include <metrics/registry.h>
+#include <metrics/prometheus.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <map>
 
 using std::string;
@@ -18,7 +20,7 @@ TEST_CASE("Labels", "[metric][labels]")
     l3["c"] = "d";
     REQUIRE((l1 == l3));
 
-    REQUIRE((Metrics::Labels{ {"a", "a1"}, {"a", "a2"} } == Metrics::Labels{ {"a", "a1"} }));
+    REQUIRE((Metrics::Labels{ {"a", "a1"}, { "a", "a2" } } == Metrics::Labels{ {"a", "a1"} }));
 }
 
 TEST_CASE("Counters", "[metric][counter]")
@@ -116,4 +118,25 @@ TEST_CASE("Registry", "[registry]")
         REQUIRE((contains(keys, { "gauge1" })));
         REQUIRE((contains(keys, { "gauge2", {{"other", "label"}} })));
     }
+}
+
+using Catch::Matchers::ContainsSubstring;
+TEST_CASE("Prometheus", "[prometheus]")
+{
+    auto registry = Metrics::createRegistry();
+    auto c1 = registry->getCounter({ "counter1" });
+    auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
+    auto g1 = registry->getGauge({ "gauge1" });
+    auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
+
+    c1 += 5;
+    c2 += 10;
+    g1 = 123;
+    g2 = 321;
+
+    auto result = serializeToPrometheus(*registry);
+    REQUIRE_THAT(result, ContainsSubstring("counter1 5"));
+    REQUIRE_THAT(result, ContainsSubstring("counter2{some=\"label\"} 10"));
+    REQUIRE_THAT(result, ContainsSubstring("gauge1 123"));
+    REQUIRE_THAT(result, ContainsSubstring("gauge2{other=\"label\"} 321"));
 }

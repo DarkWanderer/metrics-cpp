@@ -9,6 +9,7 @@ endif()
 add_library(metrics SHARED 
     metrics.cpp
     registry.cpp
+    prometheus.cpp
 )
 generate_export_header(metrics)
 
