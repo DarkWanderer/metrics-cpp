@@ -6,14 +6,10 @@
 
 namespace Metrics
 {
-    IGaugeValue::~IGaugeValue()
-    {
-    }
-    ICounterValue::~ICounterValue()
-    {
-    }
-    IHistogram::~IHistogram() {
-    }
+    IGaugeValue::~IGaugeValue() { }
+    ICounterValue::~ICounterValue() { }
+    ISummary::~ISummary() { }
+    IHistogram::~IHistogram() { }
 
     class GaugeImpl : public IGaugeValue
     {
@@ -93,23 +89,50 @@ namespace Metrics
         };
     };
 
-    struct Bucket {
-        Bucket(double bound) : bound(bound) {};
+    class SummaryImpl : public ISummary {
+    private:
+        CounterImpl m_count;
+        GaugeImpl m_sum;
 
-        const double bound = 0.0;
-        mutable CounterImpl counter;
-
-        Bucket() = default;
-        Bucket(Bucket&& other) noexcept :
-            bound(other.bound),
-            counter(other.counter.value())
+    public:
+        SummaryImpl(const std::vector<double>& quantiles, double error)
         {
         }
-        Bucket(const Bucket&) = delete;
+
+        SummaryImpl(const SummaryImpl&) = delete;
+
+        void observe(double value) override {
+            m_count++;
+            m_sum += value;
+        }
+
+        std::vector<std::pair<double, uint64_t>> values() const override
+        {
+            std::vector<std::pair<double, uint64_t>> result;
+            return result;
+        };
+
+        uint64_t count() const override { return m_count; };
+        double sum() const override { return m_sum; };
     };
 
     class HistogramImpl : public IHistogram {
     private:
+        struct Bucket {
+            Bucket(double bound) : bound(bound) {};
+
+            const double bound = 0.0;
+            mutable CounterImpl counter;
+
+            Bucket() = default;
+            Bucket(Bucket&& other) noexcept :
+                bound(other.bound),
+                counter(other.counter.value())
+            {
+            }
+            Bucket(const Bucket&) = delete;
+        };
+
         const std::vector<Bucket> m_buckets;
         CounterImpl m_count;
         GaugeImpl m_sum;
@@ -158,7 +181,8 @@ namespace Metrics
     };
 
     // Definitions for functions referenced in registry.cpp
-    std::shared_ptr<ICounterValue> createCounter() { return std::make_shared<CounterImpl>(); };
-    std::shared_ptr<IGaugeValue> createGauge() { return std::make_shared<GaugeImpl>(); };
-    std::shared_ptr<IHistogram> createHistogram(const std::vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
+    std::shared_ptr<ICounterValue> makeCounter() { return std::make_shared<CounterImpl>(); };
+    std::shared_ptr<IGaugeValue> makeGauge() { return std::make_shared<GaugeImpl>(); };
+    std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
+    std::shared_ptr<IHistogram> makeHistogram(const std::vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
 }

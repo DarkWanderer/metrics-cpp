@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 
 if (MSVC)
-    add_compile_options(/Wall)
+    add_compile_options(/Wall /wd4625 /wd4626 /wd4514)
 else()
     add_compile_options(-Wall)
 endif()

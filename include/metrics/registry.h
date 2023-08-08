@@ -9,6 +9,11 @@ namespace Metrics
 {
     struct Key
     {
+        Key() = default;
+        Key(Key&&) = default;
+        Key(const Key&) = default;
+        ~Key() = default;
+
         const std::string name;
         const Labels labels;
 
@@ -26,12 +31,57 @@ namespace Metrics
     class IRegistry
     {
     public:
+        /// <summary>
+        /// Get untyped IMetric or nullptr
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>metric</returns>
         virtual std::shared_ptr<IMetric> get(const Key& key) const = 0;
+
+        /// <summary>
+        /// Get or create a gauge with provided key
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>new or existing metric object</returns>
         virtual Gauge getGauge(const Key& key) = 0;
+
+        /// <summary>
+        /// Get or create a counter with provided key
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>new or existing metric object</returns>
         virtual Counter getCounter(const Key& key) = 0;
+
+        /// <summary>
+        /// Get or create a summary with provided key
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>new or existing metric object</returns>
+        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = {}, double error = 0.01) = 0;
+            
+            /// <summary>
+        /// Get or create a histogram with provided key
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>new or existing metric object</returns>
         virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = {}) = 0;
 
+        /// <summary>
+        /// Register an existing metric wrapper object with the registry
+        /// </summary>
+        /// <typeparam name="TMetric"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="metric"></param>
+        /// <returns></returns>
         template<class TMetric> bool add(const Key& key, TMetric metric) { return add(key, metric.raw()); }
+
+        /// <summary>
+        /// Register an existing low-level metric object with the registry
+        /// </summary>
+        /// <typeparam name="TMetric"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="metric"></param>
+        /// <returns></returns>
         virtual bool add(const Key& key, std::shared_ptr<IMetric> metric) = 0;
 
         virtual std::vector<Key> keys() const = 0;
