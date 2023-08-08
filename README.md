@@ -34,3 +34,14 @@ auto registry = createRegistry();
 auto gauge = registry->getGauge({ "my_gauge", {{"some", "label"}} });
 auto result = serializePrometheus(*registry);
 ```
+
+### Timers
+
+```cpp
+Histogram histogram({1., 2., 5., 10.});
+for (auto file: files)
+{
+    Timer<std::chrono::seconds> timer(histogram); // Adds an observation to the histogram on scope exit
+    process_file(file);
+}
+```
