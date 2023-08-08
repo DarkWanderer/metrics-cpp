@@ -11,11 +11,6 @@
 
 namespace Metrics
 {
-    // defined in metrics.cpp
-    std::shared_ptr<IGaugeValue> createGauge();
-    std::shared_ptr<ICounterValue> createCounter();
-    std::shared_ptr<IHistogram> createHistogram(const std::vector<double>& bounds);
-
     struct MetricKeyHasher
     {
         // Hash
@@ -63,11 +58,13 @@ namespace Metrics
             return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
         }
 
-        Gauge getGauge(const Key& key) override { return get<Gauge>(key, createGauge); };
+        Gauge getGauge(const Key& key) override { return get<Gauge>(key, makeGauge); };
 
-        Counter getCounter(const Key& key) override { return get<Counter>(key, createCounter); };
+        Counter getCounter(const Key& key) override { return get<Counter>(key, makeCounter); };
 
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(createHistogram, bounds)); }
+        Summary getSummary(const Key& key, const std::vector<double>& quantiles, double error) override { return get<Summary>(key, std::bind(makeSummary, quantiles, error)); }
+
+        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(makeHistogram, bounds)); }
 
         std::vector<Key> keys() const
         {
@@ -109,7 +106,7 @@ namespace Metrics
         LargeRegistryImpl() = default;
         ~LargeRegistryImpl() {}
 
-        template<typename TValueProxy, typename TValue> TValueProxy get(const Key& key, std::function<std::shared_ptr<TValue>(void)> factory)
+        template<typename TValueProxy> TValueProxy get(const Key& key, std::function<std::shared_ptr<typename TValueProxy::value_type>(void)> factory)
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             auto it = m_metrics.find(key);
@@ -121,17 +118,19 @@ namespace Metrics
             }
 
             auto metric = it->second;
-            if (TValue::stype() != metric->type())
-                throw std::logic_error("Wrong type of metric");
+            if (TValueProxy::value_type::stype() != metric->type())
+                throw std::logic_error("Inconsistent type of metric");
 
-            return TValueProxy(std::static_pointer_cast<TValue>(metric));
+            return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
         }
 
-        Gauge getGauge(const Key& key) override { return get<Gauge, IGaugeValue>(key, createGauge); };
+        Gauge getGauge(const Key& key) override { return get<Gauge>(key, makeGauge); };
 
-        Counter getCounter(const Key& key) override { return get<Counter, ICounterValue>(key, createCounter); };
+        Counter getCounter(const Key& key) override { return get<Counter>(key, makeCounter); };
 
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram, IHistogram>(key, std::bind(createHistogram, bounds)); }
+        Summary getSummary(const Key& key, const std::vector<double>& quantiles, double error) override { return get<Summary>(key, std::bind(makeSummary, quantiles, error)); }
+
+        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(makeHistogram, bounds)); }
 
         std::vector<Key> keys() const
         {

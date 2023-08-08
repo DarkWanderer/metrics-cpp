@@ -1,4 +1,4 @@
-#include <metrics/prometheus.h>
+#include <metrics/serialize.h>
 
 #include <iostream>
 #include <sstream>
@@ -29,7 +29,22 @@ namespace Metrics
         return os;
     }
 
-    void writeHistogram(ostream& os, const Key& key, const IHistogram& histogram)
+    void write(ostream& os, const Key& key, const ISummary& histogram)
+    {
+        for (auto value : histogram.values())
+        {
+            os << key.name << '{';
+            for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+            {
+                os << kv->first << "=\"" << kv->second << '"' << ',';
+            }
+            os << "quantile=\"" << value.first << "\"} " << value.second << endl;
+        }
+        os << key.name << "_sum" << key.labels << ' ' << histogram.sum() << endl;
+        os << key.name << "_count" << key.labels << ' ' << histogram.count() << endl;
+    }
+
+    void write(ostream& os, const Key& key, const IHistogram& histogram)
     {
         for (auto value : histogram.values())
         {
@@ -60,15 +75,18 @@ namespace Metrics
             case TypeCode::Gauge:
                 os << key << ' ' << std::static_pointer_cast<IGaugeValue>(metric)->value() << endl;
                 break;
+            case TypeCode::Summary:
+                write(os, key, *std::static_pointer_cast<ISummary>(metric));
+                break;
             case TypeCode::Histogram:
-                writeHistogram(os, key, *std::static_pointer_cast<IHistogram>(metric));
+                write(os, key, *std::static_pointer_cast<IHistogram>(metric));
                 break;
             }
         }
         return os;
     }
 
-    std::string serializeToPrometheus(const IRegistry& registry)
+    std::string serializePrometheus(const IRegistry& registry)
     {
         stringstream ss;
         ss << registry;
