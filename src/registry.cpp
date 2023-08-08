@@ -56,7 +56,7 @@ namespace Metrics
             }
 
             auto metric = it->second;
-            if (typename TValueProxy::value_type::stype() != metric->type())
+            if (TValueProxy::value_type::stype() != metric->type())
                 throw std::logic_error("Inconsistent type of metric");
 
             return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
