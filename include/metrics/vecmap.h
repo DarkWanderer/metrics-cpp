@@ -15,6 +15,14 @@ namespace Metrics {
         using value_type = std::pair<TKey, TValue>;
         using base_type = std::vector<value_type>;
 
+        void ensure_invariant()
+        {
+            auto c = Compare();
+            std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
+            auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return !c(v1.first, v2.first); });
+            base_type::erase(last, end());
+        }
+
     public:
         typename base_type::iterator begin() { return base_type::begin(); };
         typename base_type::iterator end() { return base_type::end(); };
@@ -35,10 +43,7 @@ namespace Metrics {
             base_type::reserve(_items.size());
             for (const auto& item : _items)
                 base_type::push_back(item);
-            auto c = Compare();
-            std::sort(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return c(v1.first, v2.first); });
-            auto last = std::unique(begin(), end(), [&c](const value_type& v1, const value_type& v2) { return !c(v1.first, v2.first); });
-            base_type::erase(last, end());
+            ensure_invariant();
         }
 
         TValue& operator[](const TKey& key)

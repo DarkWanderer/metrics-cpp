@@ -101,9 +101,10 @@ namespace Metrics
 
         SummaryImpl(const SummaryImpl&) = delete;
 
-        void observe(double value) override {
+        ISummary& observe(double value) override {
             m_count++;
             m_sum += value;
+            return *this;
         }
 
         std::vector<std::pair<double, uint64_t>> values() const override
@@ -155,7 +156,7 @@ namespace Metrics
 
         HistogramImpl(const HistogramImpl&) = delete;
 
-        void observe(double value) override {
+        IHistogram& observe(double value) override {
             for (const auto& bucket : m_buckets)
             {
                 if (bucket.bound >= value)
@@ -163,6 +164,7 @@ namespace Metrics
             }
             m_count++;
             m_sum += value;
+            return *this;
         }
 
         std::vector<std::pair<double, uint64_t>> values() const override

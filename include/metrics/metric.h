@@ -79,7 +79,7 @@ namespace Metrics
     class ISummary : public ITypedMetric<TypeCode::Summary>
     {
     public:
-        virtual void observe(double value) = 0;
+        virtual ISummary& observe(double value) = 0;
         virtual uint64_t count() const = 0;
         virtual double sum() const = 0;
         virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
@@ -91,7 +91,7 @@ namespace Metrics
     class IHistogram : public ITypedMetric<TypeCode::Histogram>
     {
     public:
-        virtual void observe(double value) = 0;
+        virtual IHistogram& observe(double value) = 0;
         virtual uint64_t count() const = 0;
         virtual double sum() const = 0;
         virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
@@ -160,7 +160,7 @@ namespace Metrics
         const std::shared_ptr<ISummary> m_value;
 
     public:
-        void observe(double value) override { m_value->observe(value); };
+        ISummary& observe(double value) override { m_value->observe(value); return *this; };
         uint64_t count() const override { return m_value->count(); };
         double sum() const override { return m_value->sum(); };
         std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
@@ -178,7 +178,7 @@ namespace Metrics
         const std::shared_ptr<IHistogram> m_value;
 
     public:
-        void observe(double value) override { m_value->observe(value); };
+        IHistogram& observe(double value) override { m_value->observe(value); return *this; };
         uint64_t count() const override { return m_value->count(); };
         double sum() const override { return m_value->sum(); };
         std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
