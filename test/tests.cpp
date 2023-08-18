@@ -11,7 +11,9 @@
 
 using namespace Metrics;
 using namespace std;
+using namespace std::chrono;
 using namespace std::chrono_literals;
+using std::this_thread::sleep_for;
 using Catch::Matchers::Equals;
 
 TEST_CASE("Metric.Labels", "[metric][labels]")
@@ -184,8 +186,8 @@ TEST_CASE("Timer.Counter", "[timer][counter]")
 {
     Counter c;
     {
-        Timer<std::chrono::milliseconds> t(c);
-        _sleep(2);
+        Timer<milliseconds> t(c);
+        sleep_for(2ms);
     }
     REQUIRE(c.value() > 1);
 }
@@ -194,8 +196,8 @@ TEST_CASE("Timer.Gauge", "[timer][gauge]")
 {
     Gauge g;
     {
-        Timer<std::chrono::milliseconds> t(g);
-        _sleep(2);
+        Timer<milliseconds> t(g);
+        sleep_for(2ms);
     }
     REQUIRE(g.value() > 1);
 }
@@ -204,8 +206,8 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
 {
     Histogram h({ 0.1, 100. });
     {
-        Timer<std::chrono::milliseconds> t(h);
-        std::this_thread::sleep_for(2ms);
+        Timer<milliseconds> t(h);
+        sleep_for(2ms);
     }
     REQUIRE(h.sum() > 1);
     REQUIRE(h.count() == 1);
