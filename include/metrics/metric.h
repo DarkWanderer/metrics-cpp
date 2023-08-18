@@ -21,7 +21,7 @@ namespace Metrics
         virtual void visit(IGaugeValue&) = 0;
         virtual void visit(ISummary&) = 0;
         virtual void visit(IHistogram&) = 0;
-        virtual ~IMetricVisitor() = 0 {};
+        METRICS_EXPORT virtual ~IMetricVisitor() = default;
     };
 
     METRICS_EXPORT std::shared_ptr<IGaugeValue> makeGauge();
