@@ -7,8 +7,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests tests.cpp)
-add_dependencies(tests metrics)
-target_link_libraries(tests PUBLIC metrics PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tests PUBLIC METRICS::lib PRIVATE Catch2::Catch2WithMain)
 
 include(Catch)
 catch_discover_tests(tests)
