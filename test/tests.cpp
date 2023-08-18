@@ -6,9 +6,12 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <map>
+#include <thread>
+#include <chrono>
 
 using namespace Metrics;
 using namespace std;
+using namespace std::chrono_literals;
 using Catch::Matchers::Equals;
 
 TEST_CASE("Metric.Labels", "[metric][labels]")
@@ -202,7 +205,7 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
     Histogram h({ 0.1, 100. });
     {
         Timer<std::chrono::milliseconds> t(h);
-        _sleep(2);
+        std::this_thread::sleep_for(2ms);
     }
     REQUIRE(h.sum() > 1);
     REQUIRE(h.count() == 1);
