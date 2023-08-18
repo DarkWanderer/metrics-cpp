@@ -58,8 +58,8 @@ namespace Metrics
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
         virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = {}, double error = 0.01) = 0;
-            
-            /// <summary>
+
+        /// <summary>
         /// Get or create a histogram with provided key
         /// </summary>
         /// <param name="key">metric key</param>
@@ -91,5 +91,4 @@ namespace Metrics
 
     METRICS_EXPORT IRegistry& defaultRegistry();
     METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry();
-    METRICS_EXPORT std::unique_ptr<IRegistry> createLargeRegistry();
 }

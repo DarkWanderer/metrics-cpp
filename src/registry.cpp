@@ -68,79 +68,11 @@ namespace Metrics
 
         std::vector<Key> keys() const
         {
+            std::unique_lock<std::mutex> lock(m_mutex);
             std::vector<Key> keys;
-            {
-                std::unique_lock<std::mutex> lock(m_mutex);
-                keys.reserve(m_metrics.size());
-                for (const auto& kv : m_metrics) {
-                    keys.push_back(kv.first);
-                }
-            }
-            return keys;
-        }
-
-        virtual bool add(const Key& key, std::shared_ptr<IMetric> metric) override
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            return m_metrics.emplace(key, metric).second;
-        }
-
-        virtual std::shared_ptr<IMetric> get(const Key& key) const override
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            auto it = m_metrics.find(key);
-            if (it != m_metrics.end())
-                return it->second;
-            else
-                return nullptr;
-        }
-    };
-
-    class LargeRegistryImpl : public IRegistry
-    {
-    private:
-        mutable std::mutex m_mutex;
-        std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
-
-    public:
-        LargeRegistryImpl() = default;
-        ~LargeRegistryImpl() {}
-
-        template<typename TValueProxy> TValueProxy get(const Key& key, std::function<std::shared_ptr<typename TValueProxy::value_type>(void)> factory)
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            auto it = m_metrics.find(key);
-
-            if (it == m_metrics.end())
-            {
-                auto new_value = factory();
-                it = m_metrics.emplace(std::move(Key(key)), std::move(new_value)).first;
-            }
-
-            auto metric = it->second;
-            if (TValueProxy::value_type::stype() != metric->type())
-                throw std::logic_error("Inconsistent type of metric");
-
-            return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
-        }
-
-        Gauge getGauge(const Key& key) override { return get<Gauge>(key, makeGauge); };
-
-        Counter getCounter(const Key& key) override { return get<Counter>(key, makeCounter); };
-
-        Summary getSummary(const Key& key, const std::vector<double>& quantiles, double error) override { return get<Summary>(key, std::bind(makeSummary, quantiles, error)); }
-
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(makeHistogram, bounds)); }
-
-        std::vector<Key> keys() const
-        {
-            std::vector<Key> keys;
-            {
-                std::unique_lock<std::mutex> lock(m_mutex);
-                keys.reserve(m_metrics.size());
-                for (const auto& kv : m_metrics) {
-                    keys.push_back(kv.first);
-                }
+            keys.reserve(m_metrics.size());
+            for (const auto& kv : m_metrics) {
+                keys.push_back(kv.first);
             }
             return keys;
         }
@@ -175,10 +107,5 @@ namespace Metrics
     METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry()
     {
         return std::unique_ptr<IRegistry>(new RegistryImpl());
-    };
-
-    METRICS_EXPORT std::unique_ptr<IRegistry> createLargeRegistry()
-    {
-        return std::unique_ptr<IRegistry>(new LargeRegistryImpl());
     };
 }

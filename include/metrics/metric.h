@@ -9,10 +9,20 @@
 namespace Metrics
 {
 #pragma region Forward declarations
-    class IGaugeValue;
     class ICounterValue;
+    class IGaugeValue;
     class ISummary;
     class IHistogram;
+
+    class IMetricVisitor
+    {
+    public:
+        virtual void visit(ICounterValue&) = 0;
+        virtual void visit(IGaugeValue&) = 0;
+        virtual void visit(ISummary&) = 0;
+        virtual void visit(IHistogram&) = 0;
+        METRICS_EXPORT virtual ~IMetricVisitor() = default;
+    };
 
     METRICS_EXPORT std::shared_ptr<IGaugeValue> makeGauge();
     METRICS_EXPORT std::shared_ptr<ICounterValue> makeCounter();
@@ -33,6 +43,7 @@ namespace Metrics
     public:
         METRICS_EXPORT virtual ~IMetric() = default;
         virtual TypeCode type() = 0;
+        virtual void accept(IMetricVisitor&) = 0;
     };
 
     template<TypeCode T> class ITypedMetric : public IMetric
@@ -44,8 +55,14 @@ namespace Metrics
 
     template<typename Value> class ValueProxy : public Value
     {
+    protected:
+        const std::shared_ptr<Value> m_value;
+        ValueProxy(std::shared_ptr<Value> value) : m_value(value) {};
+        ValueProxy(const ValueProxy&) = default;
+        ValueProxy(ValueProxy&&) = default;
     public:
         typedef Value value_type;
+        std::shared_ptr<IMetric> raw() { return m_value; }
     };
 #pragma endregion
 
@@ -58,6 +75,7 @@ namespace Metrics
         virtual uint64_t value() const = 0;
         virtual void reset() = 0;
         operator uint64_t() const { return value(); };
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
 
     protected:
         METRICS_EXPORT virtual ~ICounterValue() = 0;
@@ -71,6 +89,7 @@ namespace Metrics
         virtual IGaugeValue& operator-=(double value) = 0;
         virtual double value() const = 0;
         operator double() const { return value(); };
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
 
     protected:
         METRICS_EXPORT virtual ~IGaugeValue() = 0;
@@ -79,10 +98,11 @@ namespace Metrics
     class ISummary : public ITypedMetric<TypeCode::Summary>
     {
     public:
-        virtual void observe(double value) = 0;
+        virtual ISummary& observe(double value) = 0;
         virtual uint64_t count() const = 0;
         virtual double sum() const = 0;
         virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
 
     protected:
         METRICS_EXPORT virtual ~ISummary() = 0;
@@ -91,10 +111,11 @@ namespace Metrics
     class IHistogram : public ITypedMetric<TypeCode::Histogram>
     {
     public:
-        virtual void observe(double value) = 0;
+        virtual IHistogram& observe(double value) = 0;
         virtual uint64_t count() const = 0;
         virtual double sum() const = 0;
         virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
 
     protected:
         METRICS_EXPORT virtual ~IHistogram() = 0;
@@ -104,69 +125,44 @@ namespace Metrics
 #pragma region Stack containers
     class Counter : public ValueProxy<ICounterValue>
     {
-    private:
-        const std::shared_ptr<ICounterValue> m_value;
-
     public:
         ICounterValue& operator++(int) override { return (*m_value)++; };
         ICounterValue& operator+=(uint32_t value) override { return (*m_value += value); };
         void reset() override { m_value->reset(); };
         uint64_t value() const override { return m_value->value(); };
 
-        Counter() : m_value(makeCounter()) {};
-        Counter(std::shared_ptr<ICounterValue> value) : m_value(value) {};
+        Counter() : ValueProxy(makeCounter()) {};
+        Counter(std::shared_ptr<ICounterValue> value) : ValueProxy(value) {};
         Counter(const Counter&) = default;
         Counter(Counter&&) = default;
         ~Counter() = default;
-
-        std::shared_ptr<IMetric> raw() { return m_value; }
     };
 
     class Gauge : public ValueProxy<IGaugeValue>
     {
-    private:
-        const std::shared_ptr<IGaugeValue> m_value;
-
     public:
-        IGaugeValue& operator=(double value) override
-        {
-            *m_value = value;
-            return *this;
-        };
-        IGaugeValue& operator+=(double value) override
-        {
-            *m_value += value;
-            return *this;
-        };
-        IGaugeValue& operator-=(double value) override
-        {
-            *m_value -= value;
-            return *this;
-        };
+        IGaugeValue& operator=(double value) override { return (*m_value = value); };
+        IGaugeValue& operator+=(double value) override { return (*m_value += value); };
+        IGaugeValue& operator-=(double value) override { return (*m_value -= value); };
         double value() const override { return m_value->value(); };
 
-        Gauge() : m_value(makeGauge()) {};
-        Gauge(std::shared_ptr<IGaugeValue> value) : m_value(value) {};
+        Gauge() : ValueProxy(makeGauge()) {};
+        Gauge(std::shared_ptr<IGaugeValue> value) : ValueProxy(value) {};
         Gauge(const Gauge&) = default;
         Gauge(Gauge&&) = default;
         ~Gauge() = default;
-
-        std::shared_ptr<IMetric> raw() { return m_value; }
     };
 
     class Summary : public ValueProxy<ISummary>
     {
-    private:
-        const std::shared_ptr<ISummary> m_value;
-
     public:
-        void observe(double value) override { m_value->observe(value); };
+        ISummary& observe(double value) override { return m_value->observe(value); };
         uint64_t count() const override { return m_value->count(); };
         double sum() const override { return m_value->sum(); };
         std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
 
-        Summary(const std::vector<double>& quantiles, double error = 0.01) : m_value(makeSummary(quantiles, error)) {};
-        Summary(std::shared_ptr<ISummary> value) : m_value(value) {};
+        Summary(const std::vector<double>& quantiles, double error = 0.01) : ValueProxy(makeSummary(quantiles, error)) {};
+        Summary(std::shared_ptr<ISummary> value) : ValueProxy(value) {};
         Summary(const Summary&) = default;
         Summary(Summary&&) = default;
         ~Summary() = default;
@@ -174,22 +170,17 @@ namespace Metrics
 
     class Histogram : public ValueProxy<IHistogram>
     {
-    private:
-        const std::shared_ptr<IHistogram> m_value;
-
     public:
-        void observe(double value) override { m_value->observe(value); };
+        IHistogram& observe(double value) override { return m_value->observe(value); };
         uint64_t count() const override { return m_value->count(); };
         double sum() const override { return m_value->sum(); };
         std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
 
-        Histogram(const std::vector<double>& bounds) : m_value(makeHistogram(bounds)) {};
-        Histogram(std::shared_ptr<IHistogram> value) : m_value(value) {};
+        Histogram(const std::vector<double>& bounds) : ValueProxy(makeHistogram(bounds)) {};
+        Histogram(std::shared_ptr<IHistogram> value) : ValueProxy(value) {};
         Histogram(const Histogram&) = default;
         Histogram(Histogram&&) = default;
         ~Histogram() = default;
-
-        std::shared_ptr<IMetric> raw() { return m_value; }
     };
 #pragma endregion
 }

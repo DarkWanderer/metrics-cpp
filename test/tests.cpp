@@ -1,14 +1,20 @@
 #include <metrics/registry.h>
 #include <metrics/serialize.h>
+#include <metrics/timer.h>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <map>
+#include <thread>
+#include <chrono>
 
 using namespace Metrics;
 using namespace std;
-using Catch::Matchers::ContainsSubstring;
+using namespace std::chrono;
+using namespace std::chrono_literals;
+using std::this_thread::sleep_for;
+using Catch::Matchers::Equals;
 
 TEST_CASE("Metric.Labels", "[metric][labels]")
 {
@@ -77,9 +83,18 @@ TEST_CASE("Metric.Histogram", "[metric][histogram]")
     histogram.observe(1);
     histogram.observe(2);
     histogram.observe(3);
-    histogram.observe(5);
-    REQUIRE(histogram.sum() == 11);
+    histogram.observe(7);
+    REQUIRE(histogram.sum() == 13);
     REQUIRE(histogram.count() == 4);
+
+    auto values = histogram.values();
+
+    REQUIRE(values[0].first == 1.);
+    REQUIRE(values[1].first == 2.);
+    REQUIRE(values[2].first == 5.);
+    REQUIRE(values[0].second == 1);
+    REQUIRE(values[1].second == 2);
+    REQUIRE(values[2].second == 3);
 }
 
 TEST_CASE("Metric.Summary", "[metric][summary]")
@@ -93,20 +108,23 @@ TEST_CASE("Metric.Summary", "[metric][summary]")
     REQUIRE(summary.count() == 4);
 }
 
-struct nocopy {
-    int i = 0;
-    nocopy() noexcept = default;
-    nocopy(nocopy&&) noexcept = default;
-    nocopy(const nocopy&) = delete;
-    ~nocopy() noexcept = default;
-};
-
-inline void testRegistry(const unique_ptr<IRegistry> registry)
+std::unique_ptr<IRegistry> createReferenceRegistry()
 {
-    auto c1 = registry->getCounter({ "counter1" });
-    auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
-    auto g1 = registry->getGauge({ "gauge1" });
-    auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
+    auto registry = createRegistry();
+    registry->getCounter({ "counter1" }) += 1;
+    registry->getCounter({ "counter2", { { "some", "label" } } }) += 2;
+    registry->getGauge({ "gauge1" }) = 100.;
+    registry->getGauge({ "gauge2", {{ "another", "label" }} }) = 200.;
+
+    registry->getHistogram({ "histogram1" }, { 1., 2., 5. }).observe(1).observe(2);
+    registry->getHistogram({ "histogram2", {{"more", "labels"}} }, { 1., 2., 5. }).observe(3).observe(4);
+
+    return registry;
+}
+
+TEST_CASE("Registry.Registry", "[registry]")
+{
+    auto registry = createReferenceRegistry();
 
     CHECK_THROWS(registry->getGauge({ "counter1" }));
     CHECK_THROWS(registry->getCounter({ "gauge1" }));
@@ -122,78 +140,78 @@ inline void testRegistry(const unique_ptr<IRegistry> registry)
 
     auto keys = registry->keys();
 
-    REQUIRE((contains(keys, { "counter1" })));
-    REQUIRE((contains(keys, { "counter2", { { "some", "label" } } })));
-    REQUIRE((contains(keys, { "gauge1" })));
-    REQUIRE((contains(keys, { "gauge2", {{"other", "label"}} })));
-}
+    REQUIRE(contains(keys, { "counter1" }));
+    REQUIRE(contains(keys, { "counter2", { { "some", "label" } } }));
+    REQUIRE(contains(keys, { "gauge1" }));
+    REQUIRE(contains(keys, { "gauge2", {{ "another", "label" }} }));
+};
 
-TEST_CASE("Registry.Registry", "[registry]") { testRegistry(createRegistry()); }
-TEST_CASE("Registry.LargeRegistry", "[registry]") { testRegistry(createLargeRegistry()); }
-
-unique_ptr<IRegistry> getRegistryWithCounter() {
-    auto registry = createRegistry();
-    auto c1 = registry->getCounter({ "counter1" });
-    auto c2 = registry->getCounter({ "counter2", { { "some", "label" } } });
-    c1 += 5;
-    c2 += 10;
-    return registry;
-}
-
-unique_ptr<IRegistry> getRegistryWithGauge() {
-    auto registry = createRegistry();
-    auto g1 = registry->getGauge({ "gauge1" });
-    auto g2 = registry->getGauge({ "gauge2", {{"other", "label"}} });
-    g1 = 123;
-    g2 = 321;
-    return registry;
-}
-
-unique_ptr<IRegistry> getRegistryWithSummary() {
-    auto registry = createRegistry();
-    registry->getSummary({ "summary" });
-    return registry;
-}
-
-unique_ptr<IRegistry> getRegistryWithHistogram() {
-    auto registry = createRegistry();
-    auto h1 = registry->getHistogram({ "histogram1" }, { 1., 2., 5. });
-    auto h2 = registry->getHistogram({ "histogram2", {{"more", "labels"}} }, { 1., 2., 5. });
-    h1.observe(1);
-    h1.observe(2);
-    h2.observe(1);
-    h2.observe(2);
-    return registry;
-}
-
-TEST_CASE("Prometheus.Counter", "[prometheus][counter]")
+TEST_CASE("Serialize.Prometheus", "[prometheus]")
 {
-    auto registry = getRegistryWithCounter();
+    auto registry = createReferenceRegistry();
     auto result = serializePrometheus(*registry);
 
-    REQUIRE_THAT(result, ContainsSubstring("counter1 5"));
-    REQUIRE_THAT(result, ContainsSubstring("counter2{some=\"label\"} 10"));
+    REQUIRE_THAT(result, Equals(R"(counter1 1
+counter2{some="label"} 2
+gauge1 100
+gauge2{another="label"} 200
+# TYPE histogram1 histogram
+histogram1{le="1"} 1
+histogram1{le="2"} 2
+histogram1{le="5"} 2
+histogram1_sum 3
+histogram1_count 2
+# TYPE histogram2 histogram
+histogram2{more="labels",le="1"} 0
+histogram2{more="labels",le="2"} 0
+histogram2{more="labels",le="5"} 2
+histogram2_sum{more="labels"} 7
+histogram2_count{more="labels"} 2
+)"));
 }
 
-TEST_CASE("Prometheus.Gauge", "[prometheus][gauge]")
+TEST_CASE("Serialize.Statsd", "[statsd]")
 {
-    auto registry = getRegistryWithGauge();
-    auto result = serializePrometheus(*registry);
+    auto registry = createReferenceRegistry();
+    auto result = serializeStatsd(*registry);
 
-    REQUIRE_THAT(result, ContainsSubstring("gauge1 123"));
-    REQUIRE_THAT(result, ContainsSubstring("gauge2{other=\"label\"} 321"));
+    REQUIRE_THAT(result, Equals(R"(counter1|1|c
+counter2,some=label|2|c
+gauge1|100|g
+gauge2,another=label|200|g
+)"));
 }
 
-TEST_CASE("Prometheus.Histogram", "[prometheus][histogram]")
+TEST_CASE("Timer.Counter", "[timer][counter]")
 {
-    auto registry = getRegistryWithHistogram();
-    auto result = serializePrometheus(*registry);
+    Counter c;
+    {
+        Timer<milliseconds> t(c);
+        sleep_for(2ms);
+    }
+    REQUIRE(c.value() > 1);
+}
 
-    REQUIRE_THAT(result, ContainsSubstring("histogram1{le=\"1\"} 1"));
-    REQUIRE_THAT(result, ContainsSubstring("histogram1_sum 3"));
-    REQUIRE_THAT(result, ContainsSubstring("histogram1_count 2"));
+TEST_CASE("Timer.Gauge", "[timer][gauge]")
+{
+    Gauge g;
+    {
+        Timer<milliseconds> t(g);
+        sleep_for(2ms);
+    }
+    REQUIRE(g.value() > 1);
+}
 
-    REQUIRE_THAT(result, ContainsSubstring("histogram2{more=\"labels\",le=\"5\"} 2"));
-    REQUIRE_THAT(result, ContainsSubstring("histogram2_sum{more=\"labels\"} 3"));
-    REQUIRE_THAT(result, ContainsSubstring("histogram2_count{more=\"labels\"} 2"));
+TEST_CASE("Timer.Histogram", "[timer][histogram]")
+{
+    Histogram h({ 0.1, 100. });
+    {
+        Timer<milliseconds> t(h);
+        sleep_for(2ms);
+    }
+    REQUIRE(h.sum() > 1);
+    REQUIRE(h.count() == 1);
+	auto values = h.values();
+	REQUIRE(values[0].second == 0);
+	REQUIRE(values[1].second == 1);
 }
