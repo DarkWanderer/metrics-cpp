@@ -2,7 +2,14 @@
 
 ## Usage examples
 
-### Standalone metric
+### Quickstart
+
+```cpp
+defaultRegistry().getCounter( { "birds", {{ "kind", "sparrow" }} } )++;
+defaultRegistry().getGauge( { "tiredness" } ) += 5;
+```
+
+### Standalone metrics
 
 ```cpp
 Counter c1;
@@ -11,14 +18,8 @@ c2++;
 cout << c1.value(); // 1
 ```
 
-### Registry
+### Registering an existing metric
 
-```cpp
-auto registry = createRegistry();
-auto gauge = registry->getGauge({ "my_gauge", {{"some", "label"}} });
-gauge = 10.0;
-```
-Registry also allows adding previously existing metrics:
 ```cpp
 Gauge gauge;
 gauge = 5;
