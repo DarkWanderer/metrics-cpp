@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - uses: ammaraskar/msvc-problem-matcher@master
     - uses: ammaraskar/gcc-problem-matcher@master
