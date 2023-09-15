@@ -1,7 +1,14 @@
 #include <metrics/serialize.h>
 
+#define RAPIDJSON_HAS_STDSTRING 1
+#include <fstream>
+#include "rapidjson/document.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/writer.h"
+
 #include <iostream>
 #include <sstream>
+#include <set>
 
 using std::ostream;
 using std::stringstream;
@@ -95,5 +102,123 @@ namespace Metrics
         stringstream ss;
         ss << registry;
         return ss.str();
+    }
+
+    std::string getMetricLabel(Labels labels) {
+        std::ostringstream ss;
+        ss << labels;
+        std::string label = ss.str();
+        std::size_t pos = label.find("kind=\"");
+        if (pos == std::string::npos) {
+            return "";
+        }
+        label = label.substr(pos+6);
+        pos = label.find("\"");
+        return label.substr(0, pos);
+    }
+
+    void serializeJSON(const IRegistry& registry, std::string filename) {
+        using namespace rapidjson;
+
+        // Create the JSON document
+        Document d;
+        d.SetObject();
+    
+        // Add data to the JSON document
+        std::set<std::string> usedLabels;
+        auto keys = registry.keys();
+        for (const auto& key : keys)
+        {
+            auto metric = registry.get(key);
+            if (!metric)
+                continue;
+            Value mKey(key.name, d.GetAllocator());
+            std::string label = getMetricLabel(key.labels);
+            switch (metric->type())
+            {
+            case TypeCode::Counter:
+            {
+                if (label != "") {
+                    // Nested
+                    if (usedLabels.count(key.name) == 0) {
+                        // Create new nested object
+                        Value nestedObject(rapidjson::kObjectType);
+                        d.AddMember(mKey, nestedObject, d.GetAllocator());
+                        usedLabels.insert(key.name);
+                    }
+                    Value &nestedObjectValue = d[key.name];
+                    Value mLabel(label, d.GetAllocator());
+                    nestedObjectValue.AddMember(mLabel, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
+                } else {
+                    d.AddMember(mKey, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
+                }
+                break;
+            }
+            case TypeCode::Gauge:
+            {
+                if (label != "") {
+                    // Nested
+                    if (usedLabels.count(key.name) == 0) {
+                        // Create new nested object
+                        Value nestedObject(rapidjson::kObjectType);
+                        d.AddMember(mKey, nestedObject, d.GetAllocator());
+                        usedLabels.insert(key.name);
+                    }
+                    Value &nestedObjectValue = d[key.name];
+                    Value mLabel(label, d.GetAllocator());
+                    nestedObjectValue.AddMember(mLabel, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
+                } else {
+                    d.AddMember(mKey, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
+                }
+                break;
+            }
+            case TypeCode::Summary:
+            {
+                const ISummary& summary = *std::static_pointer_cast<ISummary>(metric);
+
+                // Create new nested object
+                Value nestedObject(rapidjson::kObjectType);
+                d.AddMember(mKey, nestedObject, d.GetAllocator());
+                Value &nestedObjectValue = d[key.name];
+                
+                for (auto value : summary.values())
+                {
+                    Value quantile(std::to_string(static_cast<int>(value.first))+"x", d.GetAllocator());
+                    nestedObjectValue.AddMember(quantile, value.second, d.GetAllocator());
+                }
+                nestedObjectValue.AddMember("sum", summary.sum(), d.GetAllocator());
+                nestedObjectValue.AddMember("average", summary.sum() / summary.count(), d.GetAllocator());
+                nestedObjectValue.AddMember("count", summary.count(), d.GetAllocator());
+                break;
+            }
+            case TypeCode::Histogram:
+            {
+                const IHistogram& histogram = *std::static_pointer_cast<IHistogram>(metric);
+
+                // Create new nested object
+                Value nestedObject(rapidjson::kObjectType);
+                d.AddMember(mKey, nestedObject, d.GetAllocator());
+                Value &nestedObjectValue = d[key.name];
+                
+                for (auto value : histogram.values())
+                {
+                    Value quantile(std::to_string(static_cast<int>(value.first))+"x", d.GetAllocator());
+                    nestedObjectValue.AddMember(quantile, value.second, d.GetAllocator());
+                }
+                nestedObjectValue.AddMember("sum", histogram.sum(), d.GetAllocator());
+                nestedObjectValue.AddMember("average", histogram.sum() / histogram.count(), d.GetAllocator());
+                nestedObjectValue.AddMember("count", histogram.count(), d.GetAllocator());
+                break;
+            }
+            }
+        }
+
+        // Write JSON file
+        FILE* fp2 = fopen("example.json", "w"); 
+        char writeBuffer[65536];
+        FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
+        Writer<FileWriteStream> writer(os);
+        d.Accept(writer);
+        fclose(fp2);
     }
 }
