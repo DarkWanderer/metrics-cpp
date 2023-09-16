@@ -13,6 +13,7 @@ namespace Metrics
     class IGaugeValue;
     class ISummary;
     class IHistogram;
+    class IText;
 
     class IMetricVisitor
     {
@@ -21,6 +22,7 @@ namespace Metrics
         virtual void visit(IGaugeValue&) = 0;
         virtual void visit(ISummary&) = 0;
         virtual void visit(IHistogram&) = 0;
+        virtual void visit(IText&) = 0;
         METRICS_EXPORT virtual ~IMetricVisitor() = default;
     };
 
@@ -28,6 +30,7 @@ namespace Metrics
     METRICS_EXPORT std::shared_ptr<ICounterValue> makeCounter();
     METRICS_EXPORT std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error);
     METRICS_EXPORT std::shared_ptr<IHistogram> makeHistogram(const std::vector<double>& bounds);
+    METRICS_EXPORT std::shared_ptr<IText> makeText();
 #pragma endregion
 
 #pragma region Common definitions
@@ -35,7 +38,8 @@ namespace Metrics
         Gauge,
         Counter,
         Summary,
-        Histogram
+        Histogram,
+        Text
     };
 
     class IMetric
@@ -120,6 +124,17 @@ namespace Metrics
     protected:
         METRICS_EXPORT virtual ~IHistogram() = 0;
     };
+
+    class IText : public ITypedMetric<TypeCode::Text>
+    {
+    public:
+        virtual IText& operator=(std::string value) = 0;
+        virtual std::string value() const = 0;
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
+
+    protected:
+        METRICS_EXPORT virtual ~IText() = 0;
+    };
 #pragma endregion
 
 #pragma region Stack containers
@@ -181,6 +196,19 @@ namespace Metrics
         Histogram(const Histogram&) = default;
         Histogram(Histogram&&) = default;
         ~Histogram() = default;
+    };
+
+    class Text : public ValueProxy<IText>
+    {
+    public:
+        IText& operator=(std::string value) { return (*m_value = value); };
+        std::string value() const override { return m_value->value(); };
+
+        Text() : ValueProxy(makeText()) {};
+        Text(std::shared_ptr<IText> value) : ValueProxy(value) {};
+        Text(const Text&) = default;
+        Text(Text&&) = default;
+        ~Text() = default;
     };
 #pragma endregion
 }

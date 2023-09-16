@@ -67,6 +67,13 @@ namespace Metrics
         virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = {}) = 0;
 
         /// <summary>
+        /// Get or create a Text with provided key
+        /// </summary>
+        /// <param name="key">metric key</param>
+        /// <returns>new or existing metric object</returns>
+        virtual Text getText(const Key& key) = 0;
+
+        /// <summary>
         /// Register an existing metric wrapper object with the registry
         /// </summary>
         /// <typeparam name="TMetric"></typeparam>

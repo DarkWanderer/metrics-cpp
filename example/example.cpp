@@ -21,6 +21,9 @@ void metricsTest() {
     Metrics::defaultRegistry().getCounter({"helloworld"})++;
     Metrics::defaultRegistry().getCounter({"helloworld"})++;
 
+    Metrics::defaultRegistry().getText({"bar", {{"kind", "msg" }}}) = "Hello World!";
+    Metrics::defaultRegistry().getText({"bar", {{"kind", "error" }}}) = "";
+
     Metrics::Gauge g = Metrics::defaultRegistry().getGauge({"foo"});
     g = 378924;
     g = 111256;

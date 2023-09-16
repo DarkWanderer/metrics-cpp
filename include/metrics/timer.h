@@ -46,5 +46,10 @@ namespace Metrics
         {
             v.observe(elapsed().count());
         }
+
+        virtual void visit(IText& v) override
+        {
+            ;
+        }
     };
 }

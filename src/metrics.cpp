@@ -10,11 +10,13 @@ namespace Metrics
     void IGaugeValue::accept(IMetricVisitor& visitor) { visitor.visit(*this); }
     void ISummary::accept(IMetricVisitor& visitor) { visitor.visit(*this); }
     void IHistogram::accept(IMetricVisitor& visitor) { visitor.visit(*this); }
+    void IText::accept(IMetricVisitor& visitor) { visitor.visit(*this); }
     
     ICounterValue::~ICounterValue() { }
 	IGaugeValue::~IGaugeValue() { }
 	ISummary::~ISummary() { }
 	IHistogram::~IHistogram() { }
+    IText::~IText() { }
 
 	class GaugeImpl : public IGaugeValue
 	{
@@ -189,9 +191,26 @@ namespace Metrics
 		double sum() const override { return m_sum; };
 	};
 
+    class TextImpl : public IText {
+	private:
+		std::string m_text;
+
+	public:
+        IText& operator=(std::string value)
+		{
+			m_text = value;
+			return *this;
+		};
+
+        TextImpl(){};
+		TextImpl(const TextImpl&) = delete;
+        std::string value() const override { return m_text; };
+	};
+
 	// Definitions for functions referenced in registry.cpp
 	std::shared_ptr<ICounterValue> makeCounter() { return std::make_shared<CounterImpl>(); };
 	std::shared_ptr<IGaugeValue> makeGauge() { return std::make_shared<GaugeImpl>(); };
 	std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
 	std::shared_ptr<IHistogram> makeHistogram(const std::vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
+    std::shared_ptr<IText> makeText() { return std::make_shared<TextImpl>(); };
 }

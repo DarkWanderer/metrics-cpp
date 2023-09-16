@@ -35,3 +35,7 @@
 build/
 out/
 .vs/
+
+# Example artifacts
+example/example
+example/example.json

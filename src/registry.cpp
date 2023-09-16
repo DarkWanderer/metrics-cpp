@@ -66,6 +66,8 @@ namespace Metrics
 
         Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(makeHistogram, bounds)); }
 
+        Text getText(const Key& key) override { return get<Text>(key, makeText); }
+
         std::vector<Key> keys() const
         {
             std::unique_lock<std::mutex> lock(m_mutex);

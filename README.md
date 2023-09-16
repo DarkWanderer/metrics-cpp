@@ -31,6 +31,8 @@ int main() {
     Metrics::defaultRegistry().getCounter({"helloworld"})++;
 
     Metrics::defaultRegistry().getGauge({"foo"}) = 2007;
+
+    Metrics::defaultRegistry().getText({"bar"}) = "Hello World!";
     
     timerExample();
 
@@ -58,6 +60,14 @@ Counters are basic number metrics that can be incremented or decremented by one 
 
 ```cpp
 defaultRegistry().getCounter({"birds", {{"kind", "sparrow"}}})++;
+```
+
+### Text
+
+Text are basic string metrics that can have their value set at any time.
+
+```cpp
+defaultRegistry().getText({"foo"}) = "bar";
 ```
 
 ### Gauge

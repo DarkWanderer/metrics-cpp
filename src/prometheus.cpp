@@ -92,6 +92,9 @@ namespace Metrics
                 os << "# TYPE " << key.name << " histogram" << endl;
                 write(os, key, *std::static_pointer_cast<IHistogram>(metric));
                 break;
+            case TypeCode::Text:
+                os << key << ' ' << std::static_pointer_cast<IText>(metric)->value() << endl;
+                break;
             }
         }
         return os;
@@ -208,6 +211,26 @@ namespace Metrics
                 nestedObjectValue.AddMember("sum", histogram.sum(), d.GetAllocator());
                 nestedObjectValue.AddMember("average", histogram.sum() / histogram.count(), d.GetAllocator());
                 nestedObjectValue.AddMember("count", histogram.count(), d.GetAllocator());
+                break;
+            }
+            case TypeCode::Text:
+            {
+                if (label != "") {
+                    // Nested
+                    if (usedLabels.count(key.name) == 0) {
+                        // Create new nested object
+                        Value nestedObject(rapidjson::kObjectType);
+                        d.AddMember(mKey, nestedObject, d.GetAllocator());
+                        usedLabels.insert(key.name);
+                    }
+                    Value &nestedObjectValue = d[key.name];
+                    Value mLabel(label, d.GetAllocator());
+                    Value mText(std::static_pointer_cast<IText>(metric)->value(), d.GetAllocator());
+                    nestedObjectValue.AddMember(mLabel, mText, d.GetAllocator());
+                } else {
+                    Value mText(std::static_pointer_cast<IText>(metric)->value(), d.GetAllocator());
+                    d.AddMember(mKey, mText, d.GetAllocator());
+                }
                 break;
             }
             }
