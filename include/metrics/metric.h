@@ -75,7 +75,7 @@ namespace Metrics
     {
     public:
         virtual ICounterValue& operator++(int) = 0;
-        virtual ICounterValue& operator+=(uint32_t value) = 0;
+        virtual ICounterValue& operator+=(uint64_t value) = 0;
         virtual uint64_t value() const = 0;
         virtual void reset() = 0;
         operator uint64_t() const { return value(); };
@@ -142,7 +142,7 @@ namespace Metrics
     {
     public:
         ICounterValue& operator++(int) override { return (*m_value)++; };
-        ICounterValue& operator+=(uint32_t value) override { return (*m_value += value); };
+        ICounterValue& operator+=(uint64_t value) override { return (*m_value += value); };
         void reset() override { m_value->reset(); };
         uint64_t value() const override { return m_value->value(); };
 

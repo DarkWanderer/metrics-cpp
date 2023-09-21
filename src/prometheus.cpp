@@ -1,7 +1,9 @@
 #include <metrics/serialize.h>
 
-#define RAPIDJSON_HAS_STDSTRING 1
 #include <fstream>
+
+#define RAPIDJSON_HAS_STDSTRING (1)
+
 #include "rapidjson/document.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
@@ -152,7 +154,9 @@ namespace Metrics
                     Value &nestedObjectValue = d[key.name];
                     Value mLabel(label, d.GetAllocator());
                     nestedObjectValue.AddMember(mLabel, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
-                } else {
+                } 
+                else 
+                {
                     d.AddMember(mKey, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
                 }
                 break;
@@ -169,9 +173,11 @@ namespace Metrics
                     }
                     Value &nestedObjectValue = d[key.name];
                     Value mLabel(label, d.GetAllocator());
-                    nestedObjectValue.AddMember(mLabel, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
-                } else {
-                    d.AddMember(mKey, std::static_pointer_cast<ICounterValue>(metric)->value(), d.GetAllocator());
+                    nestedObjectValue.AddMember(mLabel, std::static_pointer_cast<IGaugeValue>(metric)->value(), d.GetAllocator());
+                } 
+                else 
+                {
+                    d.AddMember(mKey, std::static_pointer_cast<IGaugeValue>(metric)->value(), d.GetAllocator());
                 }
                 break;
             }
@@ -184,7 +190,7 @@ namespace Metrics
                 d.AddMember(mKey, nestedObject, d.GetAllocator());
                 Value &nestedObjectValue = d[key.name];
                 
-                for (auto value : summary.values())
+                for (auto& value : summary.values())
                 {
                     Value quantile(std::to_string(static_cast<int>(value.first))+"x", d.GetAllocator());
                     nestedObjectValue.AddMember(quantile, value.second, d.GetAllocator());
@@ -203,7 +209,7 @@ namespace Metrics
                 d.AddMember(mKey, nestedObject, d.GetAllocator());
                 Value &nestedObjectValue = d[key.name];
                 
-                for (auto value : histogram.values())
+                for (auto& value : histogram.values())
                 {
                     Value quantile(std::to_string(static_cast<int>(value.first))+"x", d.GetAllocator());
                     nestedObjectValue.AddMember(quantile, value.second, d.GetAllocator());
@@ -237,11 +243,15 @@ namespace Metrics
         }
 
         // Write JSON file
-        FILE* fp2 = fopen("example.json", "w"); 
-        char writeBuffer[65536];
-        FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
-        Writer<FileWriteStream> writer(os);
-        d.Accept(writer);
-        fclose(fp2);
+        FILE* fp2 = NULL;
+        errno_t err = 0;
+        if ((err = fopen_s(&fp2, filename.c_str(), "w")) == 0)
+        {
+            char writeBuffer[65536];
+            FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
+            Writer<FileWriteStream> writer(os);
+            d.Accept(writer);
+            fclose(fp2);
+        }
     }
 }
