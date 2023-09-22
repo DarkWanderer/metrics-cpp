@@ -40,7 +40,7 @@ jobs:
       with:
         arch: ${{ matrix.arch }}
 
-    - name: Configure CMake
+    - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}
 
     - name: Build

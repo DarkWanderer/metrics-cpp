@@ -1,8 +1,18 @@
 #include <metrics/metric.h>
 
+#include <stream-quantiles/ckms.h>
+
+#include <mutex>
 #include <atomic>
 #include <vector>
+#include <list>
 #include <map>
+
+using std::mutex;
+using std::unique_lock;
+using std::atomic;
+using std::vector;
+using std::pair;
 
 namespace Metrics
 {
@@ -19,7 +29,7 @@ namespace Metrics
 	class GaugeImpl : public IGaugeValue
 	{
 	private:
-		std::atomic<double> m_value;
+		atomic<double> m_value;
 
 	public:
 		GaugeImpl() { m_value.store(0.); };
@@ -66,7 +76,7 @@ namespace Metrics
 	class CounterImpl : public ICounterValue
 	{
 	private:
-		std::atomic<uint64_t> m_value;
+		atomic<uint64_t> m_value;
 
 	public:
         CounterImpl() noexcept { m_value.store(0); };
@@ -98,25 +108,35 @@ namespace Metrics
 	// Utilizes locking internally, so is the slowest of all metric classes
 	class SummaryImpl : public ISummary {
 	private:
+        const vector<double> m_quantiles;
 		CounterImpl m_count;
 		GaugeImpl m_sum;
+        mutable mutex m_mutex;
+        yuuki::ckms::high_biased<double> m_accumulator;
 
 	public:
-        SummaryImpl(const std::vector<double>& quantiles, double error)
+        SummaryImpl(const vector<double>& quantiles, double error) : m_quantiles(quantiles), m_accumulator(error)
 		{
 		}
 
 		SummaryImpl(const SummaryImpl&) = delete;
 
 		ISummary& observe(double value) override {
+            unique_lock<mutex> lock(m_mutex);
+            m_accumulator.insert(value);
 			m_count++;
 			m_sum += value;
 			return *this;
 		}
 
-		std::vector<std::pair<double, uint64_t>> values() const override
+		vector<pair<double, uint64_t>> values() const override
 		{
-			std::vector<std::pair<double, uint64_t>> result;
+            unique_lock<mutex> lock(m_mutex);
+			vector<pair<double, uint64_t>> result;
+            for (auto q : m_quantiles)
+            {
+                result.emplace_back(q, m_accumulator.quantile(q));
+            }
 			return result;
 		};
 
@@ -141,14 +161,14 @@ namespace Metrics
 			Bucket(const Bucket&) = delete;
 		};
 
-		const std::vector<Bucket> m_buckets;
+		const vector<Bucket> m_buckets;
 		CounterImpl m_count;
 		GaugeImpl m_sum;
 
-		std::vector<Bucket> createBuckets(const std::vector<double>& bounds)
+		vector<Bucket> createBuckets(const vector<double>& bounds)
 		{
 			const auto size = bounds.size();
-			std::vector<Bucket> result;
+			vector<Bucket> result;
 			result.reserve(size);
 			for (auto bound : bounds)
 				result.emplace_back(bound);
@@ -156,7 +176,7 @@ namespace Metrics
 		}
 
 	public:
-		HistogramImpl(const std::vector<double>& bounds) :
+		HistogramImpl(const vector<double>& bounds) :
 			m_buckets(createBuckets(bounds))
 		{
 		}
@@ -174,9 +194,9 @@ namespace Metrics
 			return *this;
 		}
 
-		std::vector<std::pair<double, uint64_t>> values() const override
+		vector<pair<double, uint64_t>> values() const override
 		{
-			std::vector<std::pair<double, uint64_t>> result;
+			vector<pair<double, uint64_t>> result;
 			result.reserve(m_buckets.size());
 			for (const auto& bucket : m_buckets)
 			{
@@ -192,6 +212,6 @@ namespace Metrics
 	// Definitions for functions referenced in registry.cpp
 	std::shared_ptr<ICounterValue> makeCounter() { return std::make_shared<CounterImpl>(); };
 	std::shared_ptr<IGaugeValue> makeGauge() { return std::make_shared<GaugeImpl>(); };
-	std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
-	std::shared_ptr<IHistogram> makeHistogram(const std::vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
+	std::shared_ptr<ISummary> makeSummary(const vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
+	std::shared_ptr<IHistogram> makeHistogram(const vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
 }

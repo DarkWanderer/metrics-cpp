@@ -84,11 +84,12 @@ TEST_CASE("Metric.Histogram", "[metric][histogram]")
     histogram.observe(2);
     histogram.observe(3);
     histogram.observe(7);
-    REQUIRE(histogram.sum() == 13);
-    REQUIRE(histogram.count() == 4);
 
     auto values = histogram.values();
 
+    REQUIRE(histogram.sum() == 13);
+    REQUIRE(histogram.count() == 4);
+    REQUIRE(values.size() == 3);
     REQUIRE(values[0].first == 1.);
     REQUIRE(values[1].first == 2.);
     REQUIRE(values[2].first == 5.);
@@ -104,8 +105,18 @@ TEST_CASE("Metric.Summary", "[metric][summary]")
     summary.observe(2);
     summary.observe(3);
     summary.observe(5);
+
+    auto values = summary.values();
+
     REQUIRE(summary.sum() == 11);
     REQUIRE(summary.count() == 4);
+    REQUIRE(values.size() == 3);
+    REQUIRE(values[0].first == .5);
+    REQUIRE(values[1].first == .9);
+    REQUIRE(values[2].first == .99);
+    REQUIRE(values[0].second == 2);
+    REQUIRE(values[1].second == 3);
+    REQUIRE(values[2].second == 3);
 }
 
 std::unique_ptr<IRegistry> createReferenceRegistry()
@@ -236,4 +247,19 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
 	auto values = h.values();
 	REQUIRE(values[0].second == 0);
 	REQUIRE(values[1].second == 1);
+}
+
+TEST_CASE("Timer.Summary", "[timer][summary]")
+{
+    Summary s({ .5, .9, .99 });
+    {
+        Timer<milliseconds> t(s);
+        sleep_for(2ms);
+    }
+    REQUIRE(s.sum() > 1);
+    REQUIRE(s.count() == 1);
+    auto values = s.values();
+    REQUIRE(values[0].second > 1);
+    REQUIRE(values[1].second > 1);
+    REQUIRE(values[2].second > 1);
 }
