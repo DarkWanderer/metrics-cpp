@@ -65,7 +65,7 @@ namespace Metrics
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.99 }, double error = 0.01) = 0;
+        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.999 }, double error = 0.01) = 0;
 
         /// <summary>
         /// Get or create a histogram with provided key
