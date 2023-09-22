@@ -11,23 +11,23 @@ namespace Metrics
 #pragma region Forward declarations
     class ICounterValue;
     class IGaugeValue;
-    class ISummary;
     class IHistogram;
+    class ISummary;
 
     class IMetricVisitor
     {
     public:
         virtual void visit(ICounterValue&) = 0;
         virtual void visit(IGaugeValue&) = 0;
-        virtual void visit(ISummary&) = 0;
         virtual void visit(IHistogram&) = 0;
+        virtual void visit(ISummary&) = 0;
         METRICS_EXPORT virtual ~IMetricVisitor() = default;
     };
 
-    METRICS_EXPORT std::shared_ptr<IGaugeValue> makeGauge();
     METRICS_EXPORT std::shared_ptr<ICounterValue> makeCounter();
-    METRICS_EXPORT std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error);
+    METRICS_EXPORT std::shared_ptr<IGaugeValue> makeGauge();
     METRICS_EXPORT std::shared_ptr<IHistogram> makeHistogram(const std::vector<double>& bounds);
+    METRICS_EXPORT std::shared_ptr<ISummary> makeSummary(const std::vector<double>& quantiles, double error);
 #pragma endregion
 
 #pragma region Common definitions
@@ -41,6 +41,10 @@ namespace Metrics
     class IMetric
     {
     public:
+        IMetric() = default;
+        IMetric(IMetric&&) = default;
+        IMetric(const IMetric&) = default;
+
         METRICS_EXPORT virtual ~IMetric() = default;
         virtual TypeCode type() = 0;
         virtual void accept(IMetricVisitor&) = 0;
@@ -49,6 +53,10 @@ namespace Metrics
     template<TypeCode T> class ITypedMetric : public IMetric
     {
     public:
+        ITypedMetric() = default;
+        ITypedMetric(ITypedMetric&&) = default;
+        ITypedMetric(const ITypedMetric&) = default;
+
         static inline TypeCode stype() { return T; }
         TypeCode type() override { return T; }
     };
@@ -95,19 +103,6 @@ namespace Metrics
         METRICS_EXPORT virtual ~IGaugeValue() = 0;
     };
 
-    class ISummary : public ITypedMetric<TypeCode::Summary>
-    {
-    public:
-        virtual ISummary& observe(double value) = 0;
-        virtual uint64_t count() const = 0;
-        virtual double sum() const = 0;
-        virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
-        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
-
-    protected:
-        METRICS_EXPORT virtual ~ISummary() = 0;
-    };
-
     class IHistogram : public ITypedMetric<TypeCode::Histogram>
     {
     public:
@@ -119,6 +114,19 @@ namespace Metrics
 
     protected:
         METRICS_EXPORT virtual ~IHistogram() = 0;
+    };
+
+    class ISummary : public ITypedMetric<TypeCode::Summary>
+    {
+    public:
+        virtual ISummary& observe(double value) = 0;
+        virtual uint64_t count() const = 0;
+        virtual double sum() const = 0;
+        virtual std::vector<std::pair<double, uint64_t>> values() const = 0;
+        METRICS_EXPORT virtual void accept(IMetricVisitor&) override;
+
+    protected:
+        METRICS_EXPORT virtual ~ISummary() = 0;
     };
 #pragma endregion
 
@@ -153,21 +161,6 @@ namespace Metrics
         ~Gauge() = default;
     };
 
-    class Summary : public ValueProxy<ISummary>
-    {
-    public:
-        ISummary& observe(double value) override { return m_value->observe(value); };
-        uint64_t count() const override { return m_value->count(); };
-        double sum() const override { return m_value->sum(); };
-        std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
-
-        Summary(const std::vector<double>& quantiles, double error = 0.01) : ValueProxy(makeSummary(quantiles, error)) {};
-        Summary(std::shared_ptr<ISummary> value) : ValueProxy(value) {};
-        Summary(const Summary&) = default;
-        Summary(Summary&&) = default;
-        ~Summary() = default;
-    };
-
     class Histogram : public ValueProxy<IHistogram>
     {
     public:
@@ -181,6 +174,21 @@ namespace Metrics
         Histogram(const Histogram&) = default;
         Histogram(Histogram&&) = default;
         ~Histogram() = default;
+    };
+
+    class Summary : public ValueProxy<ISummary>
+    {
+    public:
+        ISummary& observe(double value) override { return m_value->observe(value); };
+        uint64_t count() const override { return m_value->count(); };
+        double sum() const override { return m_value->sum(); };
+        std::vector<std::pair<double, uint64_t>> values() const override { return m_value->values(); };
+
+        Summary(const std::vector<double>& quantiles, double error = 0.01) : ValueProxy(makeSummary(quantiles, error)) {};
+        Summary(std::shared_ptr<ISummary> value) : ValueProxy(value) {};
+        Summary(const Summary&) = default;
+        Summary(Summary&&) = default;
+        ~Summary() = default;
     };
 #pragma endregion
 }

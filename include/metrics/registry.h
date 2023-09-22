@@ -45,6 +45,10 @@ namespace Metrics
         /// <returns>new or existing metric object</returns>
         virtual Gauge getGauge(const Key& key) = 0;
 
+        template <typename ...Params> Gauge getGauge(Params&&... params) {
+            return getGauge(Key(std::forward<Params>(params)...));
+        }
+
         /// <summary>
         /// Get or create a counter with provided key
         /// </summary>
@@ -52,19 +56,23 @@ namespace Metrics
         /// <returns>new or existing metric object</returns>
         virtual Counter getCounter(const Key& key) = 0;
 
+        template <typename ...Params> Counter getCounter(Params&&... params) {
+            return getCounter(Key(std::forward<Params>(params)...));
+        }
+
         /// <summary>
         /// Get or create a summary with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = {}, double error = 0.01) = 0;
+        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.99 }, double error = 0.01) = 0;
 
         /// <summary>
         /// Get or create a histogram with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = {}) = 0;
+        virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = { 100., 200., 300., 400., 500. }) = 0;
 
         /// <summary>
         /// Register an existing metric wrapper object with the registry

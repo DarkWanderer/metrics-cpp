@@ -170,6 +170,28 @@ histogram2_count{more="labels"} 2
 )"));
 }
 
+TEST_CASE("Serialize.Json", "[json]")
+{
+    auto registry = createReferenceRegistry();
+    auto result = serializeJson(*registry);
+
+    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"}])"));
+}
+
+TEST_CASE("Serialize.Jsonl", "[jsonl]")
+{
+    auto registry = createReferenceRegistry();
+    auto result = serializeJsonl(*registry);
+
+    REQUIRE_THAT(result, Equals(R"({"name":"counter1","type":"counter","value":1}
+{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2}
+{"name":"gauge1","type":"gauge","value":100.0}
+{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0}
+{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"}
+{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"}
+)"));
+}
+
 TEST_CASE("Serialize.Statsd", "[statsd]")
 {
     auto registry = createReferenceRegistry();
