@@ -130,6 +130,9 @@ std::unique_ptr<IRegistry> createReferenceRegistry()
     registry->getHistogram({ "histogram1" }, { 1., 2., 5. }).observe(1).observe(2);
     registry->getHistogram({ "histogram2", {{"more", "labels"}} }, { 1., 2., 5. }).observe(3).observe(4);
 
+    registry->getSummary({ "summary1" }).observe(1).observe(2).observe(3);
+    registry->getSummary({ "summary2", {{"summary", "label"}} }).observe(3).observe(3).observe(5);
+
     return registry;
 }
 
@@ -178,6 +181,20 @@ histogram2{more="labels",le="2"} 0
 histogram2{more="labels",le="5"} 2
 histogram2_sum{more="labels"} 7
 histogram2_count{more="labels"} 2
+# TYPE summary1 summary
+summary1{quantile="0.5"} 1
+summary1{quantile="0.9"} 2
+summary1{quantile="0.99"} 2
+summary1{quantile="0.999"} 2
+summary1_sum 6
+summary1_count 3
+# TYPE summary2 summary
+summary2{summary="label",quantile="0.5"} 3
+summary2{summary="label",quantile="0.9"} 3
+summary2{summary="label",quantile="0.99"} 3
+summary2{summary="label",quantile="0.999"} 3
+summary2_sum{summary="label"} 11
+summary2_count{summary="label"} 3
 )"));
 }
 
@@ -186,7 +203,7 @@ TEST_CASE("Serialize.Json", "[json]")
     auto registry = createReferenceRegistry();
     auto result = serializeJson(*registry);
 
-    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"}])"));
+    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
 }
 
 TEST_CASE("Serialize.Jsonl", "[jsonl]")
@@ -200,6 +217,8 @@ TEST_CASE("Serialize.Jsonl", "[jsonl]")
 {"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0}
 {"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"}
 {"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"}
+{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"}
+{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}
 )"));
 }
 
