@@ -12,6 +12,7 @@ A low-footprint, high-performance C++ metrics library implementing 3 most common
 ```cpp
 defaultRegistry().getCounter( { "birds", {{ "kind", "sparrow" }} } )++;
 defaultRegistry().getGauge( { "tiredness" } ) += 5;
+std::cout << serializePrometheus(defaultRegistry()) << std::endl;
 ```
 
 ### Standalone metrics
