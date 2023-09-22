@@ -1,5 +1,7 @@
 # metrics-cpp
 
+[![Build](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml/badge.svg)](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml)
+
 A low-footprint, high-performance C++ metrics library implementing commonly used metric classes - Counter, Gauge, Histogram, Summary - in idiomatic and thread-safe faction
 
 Key features:
@@ -7,7 +9,7 @@ Key features:
 * Commonly used metric classes
 * All classes except Summary are lock-free
 * Prometheus, Json, Jsonl serialization
-
+* Cross-platform (built for Windows, Ubuntu, MacOS)
 
 ## Usage examples
 
