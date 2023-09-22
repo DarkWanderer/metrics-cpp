@@ -1,5 +1,10 @@
 # metrics-cpp
 
+A low-footprint, high-performance C++ metrics library implementing 3 most commonly used metric classes (Counter, Gauge, Histogram) in a thread-safe and idiomatic fashion
+
+## TODO 
+* Summary class
+
 ## Usage examples
 
 ### Quickstart
