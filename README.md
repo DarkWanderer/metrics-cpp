@@ -21,6 +21,8 @@ defaultRegistry().getGauge( { "tiredness" } ) += 5;
 std::cout << serializePrometheus(defaultRegistry()) << std::endl;
 ```
 
+For an example on how to utilize Metrics library in a CMake project, see [this sample](https://github.com/DarkWanderer/metrics-cpp/tree/main/samples/cmake)
+
 ### Standalone metrics
 
 ```cpp
