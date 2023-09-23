@@ -3,12 +3,31 @@
 #include <iostream>
 #include <sstream>
 
-using std::ostream;
-using std::stringstream;
-using std::endl;
+using namespace std;
 
 namespace Metrics
 {
+    const char* typeString(TypeCode type) {
+        switch (type)
+        {
+        case Metrics::TypeCode::Gauge:
+            return "gauge";
+            break;
+        case Metrics::TypeCode::Counter:
+            return "counter";
+            break;
+        case Metrics::TypeCode::Summary:
+            return "summary";
+            break;
+        case Metrics::TypeCode::Histogram:
+            return "histogram";
+            break;
+        default:
+            break;
+        }
+        return "unknown";
+    }
+
     ostream& operator<<(ostream& os, const Labels& labels)
     {
         bool opened = false;
@@ -22,78 +41,73 @@ namespace Metrics
         return os;
     }
 
-    ostream& operator<<(ostream& os, const Key& key)
+    void serialize(ostream& os, const string& name, const Labels& labels, const ISummary& summary)
     {
-        os << key.name;
-        os << key.labels;
-        return os;
-    }
-
-    void write(ostream& os, const Key& key, const ISummary& histogram)
-    {
-        for (auto value : histogram.values())
+        for (auto& value : summary.values())
         {
-            os << key.name << '{';
-            for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+            os << name << '{';
+            for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
             {
                 os << kv->first << "=\"" << kv->second << '"' << ',';
             }
             os << "quantile=\"" << value.first << "\"} " << value.second << endl;
         }
-        os << key.name << "_sum" << key.labels << ' ' << histogram.sum() << endl;
-        os << key.name << "_count" << key.labels << ' ' << histogram.count() << endl;
+        os << name << "_sum" << labels << ' ' << summary.sum() << endl;
+        os << name << "_count" << labels << ' ' << summary.count() << endl;
     }
 
-    void write(ostream& os, const Key& key, const IHistogram& histogram)
+    void serialize(ostream& os, const string& name, const Labels& labels, const IHistogram& histogram)
     {
-        for (auto value : histogram.values())
+        for (auto& value : histogram.values())
         {
-            os << key.name << '{';
-            for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+            os << name << '{';
+            for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
             {
                 os << kv->first << "=\"" << kv->second << '"' << ',';
             }
             os << "le=\"" << value.first << "\"} " << value.second << endl;
         }
-        os << key.name << "_sum" << key.labels << ' ' << histogram.sum() << endl;
-        os << key.name << "_count" << key.labels << ' ' << histogram.count() << endl;
+        os << name << "_sum" << labels << ' ' << histogram.sum() << endl;
+        os << name << "_count" << labels << ' ' << histogram.count() << endl;
     }
 
-    ostream& operator<<(ostream& os, const IRegistry& registry)
+    void serialize(ostream& os, const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
     {
-        auto keys = registry.keys();
-        for (const auto& key : keys)
+        if (!metric)
+            return ;
+        switch (metric->type())
         {
-            auto metric = registry.get(key);
-            if (!metric)
-                continue;
-            switch (metric->type())
-            {
-            case TypeCode::Counter:
-                // os << "# TYPE " << key.name << " counter" << endl;
-                os << key << ' ' << std::static_pointer_cast<ICounterValue>(metric)->value() << endl;
-                break;
-            case TypeCode::Gauge:
-                // os << "# TYPE " << key.name << " gauge" << endl;
-                os << key << ' ' << std::static_pointer_cast<IGaugeValue>(metric)->value() << endl;
-                break;
-            case TypeCode::Summary:
-                os << "# TYPE " << key.name << " summary" << endl;
-                write(os, key, *std::static_pointer_cast<ISummary>(metric));
-                break;
-            case TypeCode::Histogram:
-                os << "# TYPE " << key.name << " histogram" << endl;
-                write(os, key, *std::static_pointer_cast<IHistogram>(metric));
-                break;
-            }
+        case TypeCode::Counter:
+            // os << "# TYPE " << name << " counter" << endl;
+            os << name << labels << ' ' << static_pointer_cast<ICounterValue>(metric)->value() << endl;
+            break;
+        case TypeCode::Gauge:
+            // os << "# TYPE " << name << " gauge" << endl;
+            os << name << labels << ' ' << static_pointer_cast<IGaugeValue>(metric)->value() << endl;
+            break;
+        case TypeCode::Summary:
+            serialize(os, name, labels, *static_pointer_cast<ISummary>(metric));
+            break;
+        case TypeCode::Histogram:
+            serialize(os, name, labels, *static_pointer_cast<IHistogram>(metric));
+            break;
         }
-        return os;
     }
 
-    std::string serializePrometheus(const IRegistry& registry)
+    string serializePrometheus(const IRegistry& registry)
     {
-        stringstream ss;
-        ss << registry;
-        return ss.str();
+        stringstream out;
+        auto names = registry.metricNames();
+        for (const auto& name : names)
+        {
+            auto& group = registry.getGroup(name);
+            if (!group.description().empty())
+                out << "# HELP " << name << " " << group.description() << endl;
+            out << "# TYPE " << name << " " << typeString(group.type()) << endl;
+            auto metrics = group.metrics();
+            for (const auto& metric : metrics)
+                serialize(out, name, metric.first, metric.second);
+        }
+        return out.str();
     }
 }

@@ -7,72 +7,46 @@
 
 namespace Metrics
 {
-    struct Key
-    {
-        Key() = default;
-        Key(Key&&) = default;
-        Key(const Key&) = default;
-        ~Key() = default;
-
-        const std::string name;
-        const Labels labels;
-
-        bool operator==(const Metrics::Key& other) const { return name == other.name && labels == other.labels; }
-
-        bool operator<(const Metrics::Key& other) const
-        {
-            auto c1 = name.compare(other.name);
-            if (c1 != 0)
-                return c1 < 0;
-            return labels < other.labels;
-        }
+    class IMetricGroup {
+    public:
+        virtual std::string description() const = 0;
+        virtual TypeCode type() const = 0;
+        virtual std::vector<std::pair<Labels, std::shared_ptr<IMetric>>> metrics() const = 0;
     };
 
     class IRegistry
     {
     public:
-        /// <summary>
-        /// Get untyped IMetric or nullptr
-        /// </summary>
-        /// <param name="key">metric key</param>
-        /// <returns>metric</returns>
-        virtual std::shared_ptr<IMetric> get(const Key& key) const = 0;
+        virtual std::vector<std::string> metricNames() const = 0;
+        virtual const IMetricGroup& getGroup(const std::string& name) const = 0;
 
         /// <summary>
         /// Get or create a gauge with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Gauge getGauge(const Key& key) = 0;
-
-        template <typename ...Params> Gauge getGauge(Params&&... params) {
-            return getGauge(Key(std::forward<Params>(params)...));
-        }
+        virtual Gauge getGauge(const std::string name, const Labels& labels = {}) = 0;
 
         /// <summary>
         /// Get or create a counter with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Counter getCounter(const Key& key) = 0;
-
-        template <typename ...Params> Counter getCounter(Params&&... params) {
-            return getCounter(Key(std::forward<Params>(params)...));
-        }
+        virtual Counter getCounter(const std::string name, const Labels& labels = {}) = 0;
 
         /// <summary>
         /// Get or create a summary with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Summary getSummary(const Key& key, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.999 }, double error = 0.01) = 0;
+        virtual Summary getSummary(const std::string name, const Labels& labels = {}, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.999 }, double error = 0.01) = 0;
 
         /// <summary>
         /// Get or create a histogram with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Histogram getHistogram(const Key& key, const std::vector<double>& bounds = { 100., 200., 300., 400., 500. }) = 0;
+        virtual Histogram getHistogram(const std::string name, const Labels& labels = {}, const std::vector<double>& bounds = { 100., 200., 300., 400., 500. }) = 0;
 
         /// <summary>
         /// Register an existing metric wrapper object with the registry
@@ -81,7 +55,7 @@ namespace Metrics
         /// <param name="key"></param>
         /// <param name="metric"></param>
         /// <returns></returns>
-        template<class TMetric> bool add(const Key& key, TMetric metric) { return add(key, metric.raw()); }
+        template<class TMetric> bool add(TMetric metric, const std::string name, const Labels& labels = {}) { return add(metric.raw(), name, labels); }
 
         /// <summary>
         /// Register an existing low-level metric object with the registry
@@ -90,9 +64,9 @@ namespace Metrics
         /// <param name="key"></param>
         /// <param name="metric"></param>
         /// <returns></returns>
-        virtual bool add(const Key& key, std::shared_ptr<IMetric> metric) = 0;
+        virtual bool add(std::shared_ptr<IMetric> metric, const std::string name, const Labels& labels = {}) = 0;
 
-        virtual std::vector<Key> keys() const = 0;
+        virtual void setDescription(std::string name, std::string description) = 0;
 
         virtual ~IRegistry() = 0;
     };

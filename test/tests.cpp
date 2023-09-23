@@ -122,16 +122,19 @@ TEST_CASE("Metric.Summary", "[metric][summary]")
 std::unique_ptr<IRegistry> createReferenceRegistry()
 {
     auto registry = createRegistry();
-    registry->getCounter({ "counter1" }) += 1;
-    registry->getCounter({ "counter2", { { "some", "label" } } }) += 2;
-    registry->getGauge({ "gauge1" }) = 100.;
-    registry->getGauge({ "gauge2", {{ "another", "label" }} }) = 200.;
+    registry->getCounter("counter1") += 1;
+    registry->getCounter("counter2", { { "label", "value1" } }) += 1;
+    registry->getCounter("counter2", { { "label", "value2" } }) += 2;
+    registry->getGauge("gauge1") = 100.;
+    registry->getGauge("gauge2", { { "another", "label" } }) = 200.;
 
-    registry->getHistogram({ "histogram1" }, { 1., 2., 5. }).observe(1).observe(2);
-    registry->getHistogram({ "histogram2", {{"more", "labels"}} }, { 1., 2., 5. }).observe(3).observe(4);
+    registry->setDescription("counter1", "Description of counter 1");
 
-    registry->getSummary({ "summary1" }).observe(1).observe(2).observe(3);
-    registry->getSummary({ "summary2", {{"summary", "label"}} }).observe(3).observe(3).observe(5);
+    registry->getHistogram("histogram1", {}, { 1., 2., 5. }).observe(1).observe(2);
+    registry->getHistogram("histogram2", { {"more", "labels"} }, { 1., 2., 5. }).observe(3).observe(4);
+
+    registry->getSummary("summary1").observe(1).observe(2).observe(3);
+    registry->getSummary("summary2", { {"summary", "label"} }).observe(3).observe(3).observe(5);
 
     return registry;
 }
@@ -140,24 +143,21 @@ TEST_CASE("Registry.Registry", "[registry]")
 {
     auto registry = createReferenceRegistry();
 
-    CHECK_THROWS(registry->getGauge({ "counter1" }));
-    CHECK_THROWS(registry->getCounter({ "gauge1" }));
-    CHECK_THROWS(registry->getHistogram({ "counter1" }));
+    CHECK_THROWS(registry->getGauge("counter1"));
+    CHECK_THROWS(registry->getCounter("gauge1"));
+    CHECK_THROWS(registry->getHistogram("counter1"));
 
-    auto contains = [](vector<Key> container, Key key)
+    auto contains = [](vector<string> v, string key)
     {
-        for (const auto& k : container)
-            if (k == key)
-                return true;
-        return false;
+        return find(v.begin(), v.end(), key) != v.end();
     };
 
-    auto keys = registry->keys();
+    auto names = registry->metricNames();
 
-    REQUIRE(contains(keys, { "counter1" }));
-    REQUIRE(contains(keys, { "counter2", { { "some", "label" } } }));
-    REQUIRE(contains(keys, { "gauge1" }));
-    REQUIRE(contains(keys, { "gauge2", {{ "another", "label" }} }));
+    REQUIRE(contains(names, "counter1"));
+    REQUIRE(contains(names, "counter2"));
+    REQUIRE(contains(names, "gauge1"));
+    REQUIRE(contains(names, "gauge2"));
 };
 
 TEST_CASE("Serialize.Prometheus", "[prometheus]")
@@ -165,9 +165,15 @@ TEST_CASE("Serialize.Prometheus", "[prometheus]")
     auto registry = createReferenceRegistry();
     auto result = serializePrometheus(*registry);
 
-    REQUIRE_THAT(result, Equals(R"(counter1 1
-counter2{some="label"} 2
+    REQUIRE_THAT(result, Equals(R"(# HELP counter1 Description of counter 1
+# TYPE counter1 counter
+counter1 1
+# TYPE counter2 counter
+counter2{label="value1"} 1
+counter2{label="value2"} 2
+# TYPE gauge1 gauge
 gauge1 100
+# TYPE gauge2 gauge
 gauge2{another="label"} 200
 # TYPE histogram1 histogram
 histogram1{le="1"} 1
@@ -203,7 +209,7 @@ TEST_CASE("Serialize.Json", "[json]")
     auto registry = createReferenceRegistry();
     auto result = serializeJson(*registry);
 
-    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
+    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1},{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
 }
 
 TEST_CASE("Serialize.Jsonl", "[jsonl]")
@@ -212,7 +218,8 @@ TEST_CASE("Serialize.Jsonl", "[jsonl]")
     auto result = serializeJsonl(*registry);
 
     REQUIRE_THAT(result, Equals(R"({"name":"counter1","type":"counter","value":1}
-{"labels":{"some":"label"},"name":"counter2","type":"counter","value":2}
+{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1}
+{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2}
 {"name":"gauge1","type":"gauge","value":100.0}
 {"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0}
 {"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"}
@@ -228,7 +235,8 @@ TEST_CASE("Serialize.Statsd", "[statsd]")
     auto result = serializeStatsd(*registry);
 
     REQUIRE_THAT(result, Equals(R"(counter1|1|c
-counter2,some=label|2|c
+counter2,label=value1|1|c
+counter2,label=value2|2|c
 gauge1|100|g
 gauge2,another=label|200|g
 )"));
@@ -263,9 +271,9 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
     }
     REQUIRE(h.sum() > 1);
     REQUIRE(h.count() == 1);
-	auto values = h.values();
-	REQUIRE(values[0].second == 0);
-	REQUIRE(values[1].second == 1);
+    auto values = h.values();
+    REQUIRE(values[0].second == 0);
+    REQUIRE(values[1].second == 1);
 }
 
 TEST_CASE("Timer.Summary", "[timer][summary]")

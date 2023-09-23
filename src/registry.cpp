@@ -8,21 +8,88 @@
 #include <functional>
 #include <unordered_map>
 
+using namespace std;
+
 
 namespace Metrics
 {
     struct MetricKeyHasher
     {
         // Hash
-        std::uint64_t operator()(const Key& key) const
+        uint64_t operator()(const std::string name, const Labels& labels) const
         {
-            std::hash<std::string> h;
+            hash<string> h;
             // computes the hash of an employee using a variant
             // of the Fowler-Noll-Vo hash function
-            constexpr std::uint64_t prime{ 0x100000001B3 };
-            std::uint64_t result = h(key.name);
-            for (auto it = key.labels.cbegin(); it != key.labels.cend(); it++)
+            constexpr uint64_t prime{ 0x100000001B3 };
+            uint64_t result = h(name);
+            for (auto it = labels.cbegin(); it != labels.cend(); it++)
                 result = (result * prime) ^ h(it->first) ^ h(it->second);
+
+            return result;
+        }
+    };
+
+    class MetricGroup : public IMetricGroup {
+    private:
+        mutable mutex m_mutex;
+        TypeCode m_type;
+        string m_description;
+        map<Labels, shared_ptr<IMetric>> m_metrics;
+
+    public:
+        MetricGroup(TypeCode type) : m_type(type) { }
+        ~MetricGroup() = default;
+        MetricGroup(const MetricGroup&) = delete;
+        MetricGroup(MetricGroup&&) = delete;
+
+        TypeCode type() const override { return m_type; }
+
+        string description() const override {
+            unique_lock<mutex> lock(m_mutex);
+            return m_description;
+        }
+
+        void setDescription(string description) {
+            unique_lock<mutex> lock(m_mutex);
+            m_description = description;
+        }
+
+        bool add(const Labels& labels, shared_ptr<IMetric> metric)
+        {
+            unique_lock<mutex> lock(m_mutex);
+
+            if (m_type != metric->type())
+                throw logic_error("Inconsistent type of metric");
+            
+            return m_metrics.emplace(labels, metric).second;
+        }
+
+        template<typename TValueProxy> TValueProxy get(const Labels& labels, function<shared_ptr<typename TValueProxy::value_type>(void)> factory)
+        {
+            unique_lock<mutex> lock(m_mutex);
+            auto it = m_metrics.find(labels);
+            if (it == m_metrics.end())
+            {
+                auto new_value = factory();
+                it = m_metrics.emplace(move(Labels(labels)), move(new_value)).first;
+            }
+            auto metric = it->second;
+            if (TValueProxy::value_type::stype() != it->second->type())
+            {
+                throw logic_error("Inconsistent type of metric");
+            }
+            return TValueProxy(static_pointer_cast<typename TValueProxy::value_type>(metric));
+        }
+
+        vector<pair<Labels, shared_ptr<IMetric>>> metrics() const override
+        {
+            unique_lock<mutex> lock(m_mutex);
+            vector<pair<Labels, shared_ptr<IMetric>>> result;
+            result.reserve(m_metrics.size());
+
+            for (const auto& kv : m_metrics)
+                result.emplace_back(kv.first, kv.second);
 
             return result;
         }
@@ -31,66 +98,84 @@ namespace Metrics
     class RegistryImpl : public IRegistry
     {
     private:
-        mutable std::mutex m_mutex;
-        // Assumption: expected metrics count per registry is in order of hundreds, not hundred thousands
-        std::map<Key, std::shared_ptr<IMetric>> m_metrics;
-        // std::unordered_map<Key, std::shared_ptr<IMetric>, MetricKeyHasher> m_metrics;
+        mutable mutex m_mutex;
+
+        // Group metrics by name to support Prometheus model
+        map<string, MetricGroup> m_groups;
 
     public:
         RegistryImpl() = default;
         ~RegistryImpl() {}
 
-        template<typename TValueProxy> TValueProxy get(const Key& key, std::function<std::shared_ptr<typename TValueProxy::value_type>(void)> factory)
+        const IMetricGroup& getGroup(const string& name) const override
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            auto it = m_metrics.find(key);
+            unique_lock<mutex> lock(m_mutex);
+            auto it = m_groups.find(name);
+            if (it == m_groups.end())
+                throw std::logic_error("Group not found");
+            return it->second;
+        }
 
-            if (it == m_metrics.end())
+        MetricGroup& getOrCreateGroup(const string& name, TypeCode type)
+        {
+            unique_lock<mutex> lock(m_mutex);
+            auto it = m_groups.find(name);
+
+            if (it == m_groups.end())
             {
-                auto new_value = factory();
-                it = m_metrics.emplace(std::move(Key(key)), std::move(new_value)).first;
+                it = m_groups.emplace(name, type).first;
+            }
+            else if (type != it->second.type())
+            {
+                throw logic_error("Inconsistent type of metric");
             }
 
-            auto metric = it->second;
-            if (TValueProxy::value_type::stype() != metric->type())
-                throw std::logic_error("Inconsistent type of metric");
-
-            return TValueProxy(std::static_pointer_cast<typename TValueProxy::value_type>(metric));
+            return it->second;
         }
 
-        Gauge getGauge(const Key& key) override { return get<Gauge>(key, makeGauge); };
+        Gauge getGauge(const std::string name, const Labels& labels) override {
+            auto& group = getOrCreateGroup(name, TypeCode::Gauge);
+            return group.get<Gauge>(labels, makeGauge);
+        };
 
-        Counter getCounter(const Key& key) override { return get<Counter>(key, makeCounter); };
+        Counter getCounter(const std::string name, const Labels& labels) override {
+            auto& group = getOrCreateGroup(name, TypeCode::Counter);
+            return group.get<Counter>(labels, makeCounter);
+        };
 
-        Summary getSummary(const Key& key, const std::vector<double>& quantiles, double error) override { return get<Summary>(key, std::bind(makeSummary, quantiles, error)); }
-
-        Histogram getHistogram(const Key& key, const std::vector<double>& bounds) override { return get<Histogram>(key, std::bind(makeHistogram, bounds)); }
-
-        std::vector<Key> keys() const
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            std::vector<Key> keys;
-            keys.reserve(m_metrics.size());
-            for (const auto& kv : m_metrics) {
-                keys.push_back(kv.first);
-            }
-            return keys;
+        Summary getSummary(const std::string name, const Labels& labels, const vector<double>& quantiles, double error) override {
+            auto& group = getOrCreateGroup(name, TypeCode::Summary);
+            return group.get<Summary>(labels, bind(makeSummary, quantiles, error));
         }
 
-        virtual bool add(const Key& key, std::shared_ptr<IMetric> metric) override
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            return m_metrics.emplace(key, metric).second;
+        Histogram getHistogram(const std::string name, const Labels& labels, const vector<double>& bounds) override {
+            auto& group = getOrCreateGroup(name, TypeCode::Histogram);
+            return group.get<Histogram>(labels, bind(makeHistogram, bounds));
         }
 
-        virtual std::shared_ptr<IMetric> get(const Key& key) const override
+        virtual bool add(shared_ptr<IMetric> metric, const std::string name, const Labels& labels) override
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            auto it = m_metrics.find(key);
-            if (it != m_metrics.end())
-                return it->second;
-            else
-                return nullptr;
+            auto& group = getOrCreateGroup(name, metric->type());
+            return group.add(labels, metric);
+        }
+
+        // Inherited via IRegistry
+        vector<string> metricNames() const override
+        {
+            unique_lock<mutex> lock(m_mutex);
+            vector<string> result;
+            result.reserve(m_groups.size());
+            for (const auto& g : m_groups)
+                result.push_back(g.first);
+            return result;
+        }
+
+        virtual void setDescription(std::string name, std::string description) override 
+        {
+            unique_lock<mutex> lock(m_mutex);
+            auto it = m_groups.find(name);
+            if (it != m_groups.end())
+                it->second.setDescription(description);
         }
     };
 
@@ -104,8 +189,8 @@ namespace Metrics
         return s_registry;
     }
 
-    METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry()
+    METRICS_EXPORT unique_ptr<IRegistry> createRegistry()
     {
-        return std::unique_ptr<IRegistry>(new RegistryImpl());
+        return unique_ptr<IRegistry>(new RegistryImpl());
     };
 }
