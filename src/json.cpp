@@ -39,7 +39,7 @@ namespace Metrics {
             serialized["sum"] = s->sum();
 
             json quantiles = json::array();
-            for (const auto kv : s->values()) 
+            for (const auto& kv : s->values()) 
             {
                 json v;
                 v["quantile"] = kv.first;
@@ -58,7 +58,7 @@ namespace Metrics {
             serialized["sum"] = s->sum();
 
             json buckets;
-            for (const auto kv : s->values())
+            for (const auto& kv : s->values())
             {
                 json v;
                 v["bound"] = kv.first;

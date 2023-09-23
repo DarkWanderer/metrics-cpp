@@ -88,7 +88,7 @@ namespace Metrics
             vector<pair<Labels, shared_ptr<IMetric>>> result;
             result.reserve(m_metrics.size());
 
-            for (const auto kv : m_metrics)
+            for (const auto& kv : m_metrics)
                 result.emplace_back(kv.first, kv.second);
 
             return result;
@@ -112,7 +112,7 @@ namespace Metrics
             unique_lock<mutex> lock(m_mutex);
             auto it = m_groups.find(name);
             if (it == m_groups.end())
-                throw std::exception("Invalid group");
+                throw std::logic_error("Group not found");
             return it->second;
         }
 
