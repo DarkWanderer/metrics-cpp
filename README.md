@@ -18,13 +18,19 @@ Key features:
 
 ### Quickstart
 
+The library API was designed to provide a low barrier for entry:
+
 ```cpp
-defaultRegistry().getCounter( "birds", {{ "kind", "sparrow" }} )++;
-defaultRegistry().getGauge( "tiredness" ) += 5;
-std::cout << serializePrometheus(defaultRegistry()) << std::endl;
+    auto metrics = createRegistry();
+    metrics->getCounter( "birds", {{ "kind", "pigeon" }} )++;
+    metrics->getCounter( "birds", {{ "kind", "sparrow" }} )+=10;
+    metrics->getGauge( "tiredness" ) += 1.5;
+    
+    cout << "The library supports outputting metrics in Prometheus format:" << endl << serializePrometheus(*metrics) << endl;
+    cout << "And in JSON format:" << endl << serializeJsonl(*metrics) << endl;
 ```
 
-For an example on how to utilize Metrics library in a CMake project, see [this sample](https://github.com/DarkWanderer/metrics-cpp/tree/main/samples/cmake)
+For further information on using library via CMake, see [this sample](https://github.com/DarkWanderer/metrics-cpp/tree/main/samples/cmake)
 
 ### Standalone metrics
 
