@@ -55,7 +55,7 @@ namespace Metrics
         /// <param name="key"></param>
         /// <param name="metric"></param>
         /// <returns></returns>
-        template<class TMetric> bool add(TMetric metric, const std::string name, const Labels& labels = {}) { return add(key, metric.raw()); }
+        template<class TMetric> bool add(TMetric metric, const std::string name, const Labels& labels = {}) { return add(metric.raw(), name, labels); }
 
         /// <summary>
         /// Register an existing low-level metric object with the registry
