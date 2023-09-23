@@ -18,34 +18,36 @@ namespace Metrics
             return os.str();
         }
 
-        void write(const Key& key)
+        void write(const string& name, const Labels& labels)
         {
-            os << key.name;
-            for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+            os << name;
+            for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
                 os << "," << kv->first << "=" << kv->second;
         }
 
         void visit(const IRegistry& registry)
         {
-            auto keys = registry.keys();
-            for (const auto& key : keys)
+            auto names = registry.metricNames();
+            for (const auto& name : names)
             {
-                auto metric = registry.get(key);
-                if (!metric)
-                    continue;
-
-                switch (metric->type())
-                {
-                case TypeCode::Counter:
-                    write(key);
-                    os << "|" << std::static_pointer_cast<ICounterValue>(metric)->value() << "|c" << endl;
-                    break;
-                case TypeCode::Gauge:
-                    write(key);
-                    os << "|" << std::static_pointer_cast<IGaugeValue>(metric)->value() << "|g" << endl;
-                    break;
-                default:
-                    break;
+                auto& group = registry.getGroup(name);
+                auto metrics = group.metrics();
+                for (const auto& kv : metrics) {
+                    const auto& labels = kv.first;
+                    const auto& metric = kv.second;
+                    switch (metric->type())
+                    {
+                    case TypeCode::Counter:
+                        write(name, labels);
+                        os << "|" << std::static_pointer_cast<ICounterValue>(metric)->value() << "|c" << endl;
+                        break;
+                    case TypeCode::Gauge:
+                        write(name, labels);
+                        os << "|" << std::static_pointer_cast<IGaugeValue>(metric)->value() << "|g" << endl;
+                        break;
+                    default:
+                        break;
+                    }
                 }
             }
         }

@@ -5,20 +5,20 @@
 #include <sstream>
 
 using json = nlohmann::json;
-
+using namespace std;
 
 namespace Metrics {
-    json serialize(const Key& key, const std::shared_ptr<IMetric> metric)
+    json serialize(const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
     {
         json serialized;
-        serialized["name"] = key.name;
-        json labels;
-        for (auto kv = key.labels.cbegin(); kv != key.labels.cend(); kv++)
+        serialized["name"] = name;
+        json jlabels;
+        for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
         {
-            labels[kv->first] = kv->second;
+            jlabels[kv->first] = kv->second;
         }
-        if (!labels.empty())
-            serialized["labels"] = labels;
+        if (!jlabels.empty())
+            serialized["labels"] = jlabels;
 
         switch (metric->type())
         {
@@ -76,14 +76,14 @@ namespace Metrics {
     METRICS_EXPORT std::string serializeJson(const IRegistry& registry)
     {
         auto result = json::array();
-        auto keys = registry.keys();
 
-        for (const auto& key : keys)
+        auto names = registry.metricNames();
+        for (const auto& name : names)
         {
-            auto metric = registry.get(key);
-            if (!metric)
-                continue;
-            result.emplace_back(serialize(key, metric));
+            auto& group = registry.getGroup(name);
+            auto metrics = group.metrics();
+            for (const auto& metric : metrics)
+                result.emplace_back(serialize(name, metric.first, metric.second));
         }
 
         std::stringstream out;
@@ -94,14 +94,13 @@ namespace Metrics {
     METRICS_EXPORT std::string serializeJsonl(const IRegistry& registry)
     {
         std::stringstream out;
-        auto keys = registry.keys();
-
-        for (const auto& key : keys)
+        auto names = registry.metricNames();
+        for (const auto& name : names)
         {
-            auto metric = registry.get(key);
-            if (!metric)
-                continue;
-            out << serialize(key, metric) << std::endl;
+            auto& group = registry.getGroup(name);
+            auto metrics = group.metrics();
+            for (const auto& metric : metrics)
+                out << serialize(name, metric.first, metric.second) << std::endl;
         }
 
         return out.str();

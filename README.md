@@ -32,20 +32,30 @@ cout << c1.value(); // 1
 
 ### Registering an existing metric
 
+`Registry`
+
+```cpp
+auto registry = createRegistry();
+auto gauge = registry->getGauge("my_gauge", {{"some", "label"}});
+gauge = 10.0;
+```
+Registry also allows adding previously existing metrics:
 ```cpp
 Gauge gauge;
 gauge = 5;
 auto registry = createRegistry();
-registry->add({ "my_gauge", {{"some", "label"}} }, gauge);
-cout << registry->getGauge({ "my_gauge", {{"some", "label"}} }).value(); // 5
+registry->add("my_gauge", {{"some", "label"}}, gauge);
+cout << registry->getGauge("my_gauge", {{"some", "label"}}).value(); // 5
 ```
 
-### Prometheus
+### Serialization
 
 ```cpp
 auto registry = createRegistry();
-auto gauge = registry->getGauge({ "my_gauge", {{"some", "label"}} });
-auto result = serializePrometheus(*registry);
+auto gauge = registry->getGauge("my_gauge", {{"some", "label"}});
+auto p = serializePrometheus(*registry);
+auto j = serializeJson(*registry);
+auto s = serializeStatsd(*registry);
 ```
 
 ### Timers
