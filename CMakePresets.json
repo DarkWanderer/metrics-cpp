@@ -5,7 +5,10 @@
       "name": "common-base",
       "hidden": true,
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}"
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "METRICS_TESTS": true
+      }
     },
     {
       "name": "linux-base",
