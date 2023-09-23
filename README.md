@@ -7,7 +7,7 @@ A low-footprint, high-performance C++ metrics library implementing commonly used
 Key features:
 
 * Commonly used metric classes
-* All classes except Summary are lock-free
+  * all metrics except Summary are lock-free
 * Prometheus, Json, Jsonl serialization
 * Cross-platform (built for Windows, Ubuntu, MacOS)
 
