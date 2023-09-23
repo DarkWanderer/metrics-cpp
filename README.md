@@ -8,7 +8,10 @@ Key features:
 
 * Commonly used metric classes
   * all metrics except Summary are lock-free
-* Prometheus, Json, Jsonl serialization
+* Various methods of serialization
+  * Prometheus
+  * JSON/JSONL
+  * statsd
 * Cross-platform (built for Windows, Ubuntu, MacOS)
 
 ## Usage examples
@@ -16,8 +19,8 @@ Key features:
 ### Quickstart
 
 ```cpp
-defaultRegistry().getCounter( { "birds", {{ "kind", "sparrow" }} } )++;
-defaultRegistry().getGauge( { "tiredness" } ) += 5;
+defaultRegistry().getCounter( "birds", {{ "kind", "sparrow" }} )++;
+defaultRegistry().getGauge( "tiredness" ) += 5;
 std::cout << serializePrometheus(defaultRegistry()) << std::endl;
 ```
 
@@ -32,16 +35,18 @@ c2++;
 cout << c1.value(); // 1
 ```
 
-### Registering an existing metric
+### Working with registry
 
-`Registry`
+`Registry` is a class representing grouping of metrics within the application. Usually you would have a single `registry` per application or application domain. You can create metrics from within the registry:
 
 ```cpp
 auto registry = createRegistry();
 auto gauge = registry->getGauge("my_gauge", {{"some", "label"}});
 gauge = 10.0;
 ```
-Registry also allows adding previously existing metrics:
+
+Or add existing metrics with a key:
+
 ```cpp
 Gauge gauge;
 gauge = 5;
@@ -49,6 +54,8 @@ auto registry = createRegistry();
 registry->add("my_gauge", {{"some", "label"}}, gauge);
 cout << registry->getGauge("my_gauge", {{"some", "label"}}).value(); // 5
 ```
+
+The recommended pattern is to instrument low-level code using standalone metrics and then add the needed metrics to a `registry` instance - this way, you can track same metrics under different names in different contexts
 
 ### Serialization
 
