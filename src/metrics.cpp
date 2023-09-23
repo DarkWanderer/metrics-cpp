@@ -105,7 +105,7 @@ namespace Metrics
 	};
 
 	// Implements CKMS algorithm for approximate quantile calculation
-	// Utilizes locking internally, so is the slowest of all metric classes
+	// Utilizes locking internally. Using Histogram is recommended instead
 	class SummaryImpl : public ISummary {
 	private:
         const vector<double> m_quantiles;
@@ -122,10 +122,10 @@ namespace Metrics
 		SummaryImpl(const SummaryImpl&) = delete;
 
 		ISummary& observe(double value) override {
+            m_count++;
+            m_sum += value;
             unique_lock<mutex> lock(m_mutex);
             m_accumulator.insert(value);
-			m_count++;
-			m_sum += value;
 			return *this;
 		}
 

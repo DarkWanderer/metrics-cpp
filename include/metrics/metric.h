@@ -176,6 +176,10 @@ namespace Metrics
         ~Histogram() = default;
     };
 
+    /// <summary>
+    /// Class calculating approximate quantiles for incoming data
+    /// https://prometheus.io/docs/practices/histograms/#:~:text=Two%20rules%20of%20thumb%3A,distribution%20of%20the%20values%20is.
+    /// </summary>
     class Summary : public ValueProxy<ISummary>
     {
     public:
