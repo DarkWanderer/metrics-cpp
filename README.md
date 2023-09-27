@@ -6,8 +6,11 @@ A low-footprint, high-performance C++ metrics library implementing commonly used
 
 Key features:
 
-* Commonly used metric classes
+* Provides commonly used metric classes
+* A number of out-the-box optimizations
   * all metrics except Summary are lock-free
+  * Labels are optimized for cache locality (vector instead of std::map)
+  * Minimized locking for operations in Registry
 * Various methods of serialization
   * Prometheus
   * JSON/JSONL
