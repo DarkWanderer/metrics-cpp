@@ -4,18 +4,27 @@
 
 A low-footprint, high-performance C++ metrics library implementing commonly used metric classes - Counter, Gauge, Histogram, Summary - in idiomatic and thread-safe faction
 
-Key features:
+## Design goals
+
+The design goals of this library are the following:
+
+* Be as lightweight as possible - all operations on Counter, Gauge, Histogram are lock-free using atomic operations
+* Allow to defer metric naming - just add a counter, you'll think of a name later
+* Allow to easily assemble the set of metrics you want to expose later
+
+## Key features
 
 * Provides commonly used metric classes
 * A number of out-the-box optimizations
   * all metrics except Summary are lock-free
-  * Labels are optimized for cache locality (vector instead of std::map)
+  * Labels are optimized for cache locality (vector instead of std::map; make sure to use a compiler which takes advantage of [SSO](https://pvs-studio.com/en/blog/terms/6658/))
   * Minimized locking for operations in Registry
 * Various methods of serialization
   * Prometheus
   * JSON/JSONL
   * statsd
 * Cross-platform (built for Windows, Ubuntu, MacOS)
+* Planned: HTTP/UDP sinks
 
 ## Usage examples
 
