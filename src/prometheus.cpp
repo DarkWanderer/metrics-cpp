@@ -1,4 +1,7 @@
 #include <metrics/serialize.h>
+#include <metrics/sink.h>
+
+#include <asio.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -110,4 +113,44 @@ namespace Metrics
         }
         return out.str();
     }
+
+    class PrometheusHttpServerSink : public IRegistrySink {
+    private:
+        shared_ptr<IRegistry> m_registry;
+
+    public:
+        PrometheusHttpServerSink(shared_ptr<IRegistry> registry) : m_registry(registry) {};
+
+        virtual shared_ptr<IRegistry> registry() const override {
+            return m_registry;
+        };
+    };
+
+    shared_ptr<IRegistrySink> createPrometheusHttpServerSink( shared_ptr<IRegistry> registry)
+    {
+        if (!registry)
+            registry = createRegistry();
+
+        return make_shared<PrometheusHttpServerSink>(registry);
+    }
+
+    class PrometheusOnDemandPushGatewaySink : public IOnDemandSink 
+    {
+    private:
+        string m_host;
+        uint16_t m_port;
+    public:
+        PrometheusOnDemandPushGatewaySink(string host, uint16_t port) :
+            m_host(host), m_port(port)
+        {};
+
+        void send(shared_ptr<IRegistry> registry) override
+        {
+            asio::io_service io_service;
+            asio::ip::tcp::resolver resolver(io_service);
+            asio::ip::tcp::resolver::query query(m_host, std::to_string(m_port));
+            auto endpoint_iterator = resolver.resolve(query);
+
+        }
+    };
 }

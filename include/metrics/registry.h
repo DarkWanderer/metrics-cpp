@@ -18,7 +18,10 @@ namespace Metrics
     {
     public:
         virtual std::vector<std::string> metricNames() const = 0;
+
         virtual const IMetricGroup& getGroup(const std::string& name) const = 0;
+
+        virtual size_t size() const = 0;
 
         /// <summary>
         /// Get or create a gauge with provided key
@@ -72,5 +75,5 @@ namespace Metrics
     };
 
     METRICS_EXPORT IRegistry& defaultRegistry();
-    METRICS_EXPORT std::unique_ptr<IRegistry> createRegistry();
+    METRICS_EXPORT std::shared_ptr<IRegistry> createRegistry();
 }
