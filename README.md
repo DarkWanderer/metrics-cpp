@@ -26,6 +26,10 @@ The design goals of this library are the following:
 * Cross-platform (built for Windows, Ubuntu, MacOS)
 * Planned: HTTP/UDP sinks
 
+## Limitations & compromises
+
+Due to limited number of locks employed, there is no strong consistency guarantee between different metrics. If a particular thread changes two counters and serialization happens in the middle, you may see a value for one counter increasing but not for the other - until the next time metrics are collected. Hence, care must be taken when creating alerts based on metrics differential
+
 ## Usage examples
 
 ### Quickstart
