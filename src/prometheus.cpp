@@ -13,16 +13,16 @@ namespace Metrics
     const char* typeString(TypeCode type) {
         switch (type)
         {
-        case Metrics::TypeCode::Gauge:
+        case TypeCode::Gauge:
             return "gauge";
             break;
-        case Metrics::TypeCode::Counter:
+        case TypeCode::Counter:
             return "counter";
             break;
-        case Metrics::TypeCode::Summary:
+        case TypeCode::Summary:
             return "summary";
             break;
-        case Metrics::TypeCode::Histogram:
+        case TypeCode::Histogram:
             return "histogram";
             break;
         default:

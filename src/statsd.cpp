@@ -91,7 +91,7 @@ namespace Metrics
             auto endpoint = udp::endpoint(*endpoint_iterator); // Result guaranteed to be valid
 
             auto send = [&](const char* begin, size_t count) { 
-                auto sent = m_socket.send_to(asio::buffer(begin, count), endpoint);
+                m_socket.send_to(asio::buffer(begin, count), endpoint);
             };
 
             // Serialize input into string
@@ -131,7 +131,7 @@ namespace Metrics
         }
     };
 
-    shared_ptr<IOnDemandSink> Metrics::createStatsdUdpSink(string host, uint16_t port)
+    shared_ptr<IOnDemandSink> createStatsdUdpSink(string host, uint16_t port)
     {
         return make_shared<StatsdOnDemandUdpSink>(host, port);
     }
@@ -170,7 +170,7 @@ namespace Metrics
         }
     };
 
-    shared_ptr<IOnDemandSink> Metrics::createStatsdTcpSink(string host, uint16_t port)
+    shared_ptr<IOnDemandSink> createStatsdTcpSink(string host, uint16_t port)
     {
         return make_shared<StatsdOnDemandTcpSink>(host, port);
     }
