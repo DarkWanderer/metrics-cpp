@@ -93,6 +93,11 @@ namespace Metrics
 
             return result;
         }
+
+        size_t size() const {
+            unique_lock<mutex> lock(m_mutex);
+            return m_metrics.size();
+        }
     };
 
     class RegistryImpl : public IRegistry
@@ -177,6 +182,16 @@ namespace Metrics
             if (it != m_groups.end())
                 it->second.setDescription(description);
         }
+
+        virtual size_t size() const override
+        {
+            size_t result;
+            unique_lock<mutex> lock(m_mutex);
+            for (const auto& g : m_groups)
+                result += g.second.size();
+            return result;
+
+        }
     };
 
     IRegistry::~IRegistry()
@@ -189,8 +204,8 @@ namespace Metrics
         return s_registry;
     }
 
-    METRICS_EXPORT unique_ptr<IRegistry> createRegistry()
+    METRICS_EXPORT shared_ptr<IRegistry> createRegistry()
     {
-        return unique_ptr<IRegistry>(new RegistryImpl());
+        return make_shared<RegistryImpl>();
     };
 }

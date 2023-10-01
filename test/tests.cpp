@@ -1,6 +1,7 @@
 #include <metrics/registry.h>
 #include <metrics/serialize.h>
 #include <metrics/timer.h>
+#include <metrics/sink.h>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -119,7 +120,7 @@ TEST_CASE("Metric.Summary", "[metric][summary]")
     REQUIRE(values[2].second == 3);
 }
 
-std::unique_ptr<IRegistry> createReferenceRegistry()
+std::shared_ptr<IRegistry> createReferenceRegistry()
 {
     auto registry = createRegistry();
     registry->getCounter("counter1") += 1;
