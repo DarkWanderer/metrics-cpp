@@ -2,17 +2,14 @@
 
 #include <stream-quantiles/ckms.h>
 
+#include <algorithm>
 #include <mutex>
 #include <atomic>
 #include <vector>
 #include <list>
 #include <map>
 
-using std::mutex;
-using std::unique_lock;
-using std::atomic;
-using std::vector;
-using std::pair;
+using namespace std;
 
 namespace Metrics
 {
@@ -146,61 +143,45 @@ namespace Metrics
 
 	class HistogramImpl : public IHistogram {
 	private:
-		struct Bucket {
-			Bucket(double bound) : bound(bound) {};
-
-			const double bound = 0.0;
-			mutable CounterImpl counter;
-
-			Bucket() = default;
-			Bucket(Bucket&& other) noexcept :
-				bound(other.bound),
-				counter(other.counter.value())
-			{
-			}
-			Bucket(const Bucket&) = delete;
-		};
-
-		const vector<Bucket> m_buckets;
+        vector<double> m_bounds;
+        vector<CounterImpl> m_counts;
 		CounterImpl m_count;
 		GaugeImpl m_sum;
 
-		vector<Bucket> createBuckets(const vector<double>& bounds)
-		{
-			const auto size = bounds.size();
-			vector<Bucket> result;
-			result.reserve(size);
-			for (auto bound : bounds)
-				result.emplace_back(bound);
-			return result;
-		}
-
 	public:
-		HistogramImpl(const vector<double>& bounds) :
-			m_buckets(createBuckets(bounds))
+		HistogramImpl(const vector<double>& bounds)
 		{
+            m_bounds = bounds;
+            sort(m_bounds.begin(), m_bounds.end());
+            auto last = unique(m_bounds.begin(), m_bounds.end());
+            m_bounds.erase(last, m_bounds.end());
+            m_counts = vector<CounterImpl>(m_bounds.size());
 		}
 
 		HistogramImpl(const HistogramImpl&) = delete;
 
 		IHistogram& observe(double value) override {
-			for (const auto& bucket : m_buckets)
-			{
-				if (bucket.bound >= value)
-					bucket.counter++;
-			}
-			m_count++;
-			m_sum += value;
+            m_count++;
+            m_sum += value;
+            auto bound = lower_bound(m_bounds.begin(), m_bounds.end(), value);
+            if (bound != m_bounds.end())
+            {
+                auto index = distance(m_bounds.begin(), bound);
+                m_counts[index]++;
+            }
 			return *this;
 		}
 
 		vector<pair<double, uint64_t>> values() const override
 		{
 			vector<pair<double, uint64_t>> result;
-			result.reserve(m_buckets.size());
-			for (const auto& bucket : m_buckets)
+            const auto size = m_bounds.size();
+			result.reserve(size);
+            uint64_t running_total = 0;
+            for (int i = 0; i < size; i++)
 			{
-				result.emplace_back(bucket.bound, bucket.counter.value());
+                running_total += m_counts[i].value();
+                result.emplace_back(m_bounds[i], running_total);
 			}
 			return result;
 		};
