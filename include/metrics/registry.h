@@ -12,6 +12,7 @@ namespace Metrics
         virtual std::string description() const = 0;
         virtual TypeCode type() const = 0;
         virtual std::vector<std::pair<Labels, std::shared_ptr<IMetric>>> metrics() const = 0;
+        virtual ~IMetricGroup() = 0;
     };
 
     class IRegistry

@@ -1,6 +1,8 @@
 #include <metrics/serialize.h>
 
+#pragma warning(push, 1)
 #include <nlohmann/json.hpp>
+#pragma warning(pop)
 
 #include <sstream>
 

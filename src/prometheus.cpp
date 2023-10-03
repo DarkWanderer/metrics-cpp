@@ -1,7 +1,9 @@
 #include <metrics/serialize.h>
 #include <metrics/sink.h>
 
+#pragma warning(push, 1)
 #include <asio.hpp>
+#pragma warning(pop)
 
 #include <iostream>
 #include <sstream>

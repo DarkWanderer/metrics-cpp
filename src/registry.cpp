@@ -61,7 +61,7 @@ namespace Metrics
 
             if (m_type != metric->type())
                 throw logic_error("Inconsistent type of metric");
-            
+
             return m_metrics.emplace(labels, metric).second;
         }
 
@@ -175,7 +175,7 @@ namespace Metrics
             return result;
         }
 
-        virtual void setDescription(std::string name, std::string description) override 
+        virtual void setDescription(std::string name, std::string description) override
         {
             unique_lock<mutex> lock(m_mutex);
             auto it = m_groups.find(name);
@@ -185,7 +185,7 @@ namespace Metrics
 
         virtual size_t size() const override
         {
-            size_t result;
+            size_t result = 0;
             unique_lock<mutex> lock(m_mutex);
             for (const auto& g : m_groups)
                 result += g.second.size();
@@ -194,9 +194,9 @@ namespace Metrics
         }
     };
 
-    IRegistry::~IRegistry()
-    {
-    }
+    IRegistry::~IRegistry() { }
+
+    IMetricGroup::~IMetricGroup() { }
 
     IRegistry& defaultRegistry()
     {
