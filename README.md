@@ -9,8 +9,8 @@ A low-footprint, high-performance C++ metrics library implementing commonly used
 The design goals of this library are the following:
 
 * Be as lightweight as possible - all operations on Counter, Gauge, Histogram are lock-free using atomic operations
-* Allow to defer metric naming - just add a counter, you'll think of a name later
-* Allow to easily assemble the set of metrics you want to expose later
+* Allow to think of instrumenting first and exposition later
+* Provide easy to use API
 
 ## Key features
 
