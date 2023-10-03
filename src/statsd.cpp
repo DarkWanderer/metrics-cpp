@@ -142,13 +142,11 @@ namespace Metrics
         asio::io_service m_io_service;
         string m_host;
         uint16_t m_port;
-        const size_t m_max_packet_size;
     public:
         StatsdOnDemandTcpSink(string host, uint16_t port) :
             m_io_service(),
             m_host(host),
-            m_port(port),
-            m_max_packet_size(1000)
+            m_port(port)
         {
         }
 
