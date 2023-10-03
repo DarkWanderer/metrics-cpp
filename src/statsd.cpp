@@ -1,12 +1,13 @@
 #include <metrics/serialize.h>
 #include <metrics/sink.h>
 
+#pragma warning(push, 1)
 #include <asio.hpp>
+#pragma warning(pop)
 
 #include <iostream>
 #include <sstream>
 #include <functional>
-#include <string_view>
 
 using namespace std;
 using asio::ip::udp;

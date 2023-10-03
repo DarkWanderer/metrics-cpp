@@ -4,7 +4,7 @@
 
 namespace Metrics
 {
-    template<typename TDuration=std::chrono::seconds> class Timer : IMetricVisitor {
+    template<typename TDurationUnit=std::chrono::seconds> class Timer : IMetricVisitor {
     private:
         std::shared_ptr<IMetric> m_metric;
         std::chrono::time_point<std::chrono::steady_clock> m_start;
@@ -21,10 +21,10 @@ namespace Metrics
             m_metric->accept(*this);
         }
 
-        TDuration elapsed()
+        TDurationUnit elapsed()
         {
             auto now = std::chrono::steady_clock::now();
-            return std::chrono::duration_cast<TDuration>(now - m_start);
+            return std::chrono::duration_cast<TDurationUnit>(now - m_start);
         }
     private:
         virtual void visit(ICounterValue& v) override
