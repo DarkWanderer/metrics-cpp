@@ -178,7 +178,7 @@ namespace Metrics
             const auto size = m_bounds.size();
 			result.reserve(size);
             uint64_t running_total = 0;
-            for (int i = 0; i < size; i++)
+            for (size_t i = 0; i < size; i++)
 			{
                 running_total += m_counts[i].value();
                 result.emplace_back(m_bounds[i], running_total);

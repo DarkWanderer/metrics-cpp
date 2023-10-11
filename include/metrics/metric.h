@@ -68,6 +68,7 @@ namespace Metrics
         ValueProxy(std::shared_ptr<Value> value) : m_value(value) {};
         ValueProxy(const ValueProxy&) = default;
         ValueProxy(ValueProxy&&) = default;
+        ValueProxy& operator=(const ValueProxy&) = default;
     public:
         typedef Value value_type;
         std::shared_ptr<IMetric> raw() { return m_value; }

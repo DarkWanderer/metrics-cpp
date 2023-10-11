@@ -1,4 +1,4 @@
-#include <metrics/serialize.h>
+#include <metrics/json.h>
 
 #pragma warning(push, 1)
 #include <nlohmann/json.hpp>
@@ -10,101 +10,103 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace Metrics {
-    json serialize(const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
-    {
-        json serialized;
-        serialized["name"] = name;
-        json jlabels;
-        for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
+    namespace Json {
+        json serialize(const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
         {
-            jlabels[kv->first] = kv->second;
-        }
-        if (!jlabels.empty())
-            serialized["labels"] = jlabels;
-
-        switch (metric->type())
-        {
-        case TypeCode::Counter:
-            serialized["type"] = "counter";
-            serialized["value"] = std::static_pointer_cast<ICounterValue>(metric)->value();
-            break;
-        case TypeCode::Gauge:
-            serialized["type"] = "gauge";
-            serialized["value"] = std::static_pointer_cast<IGaugeValue>(metric)->value();
-            break;
-        case TypeCode::Summary:
-        {
-            serialized["type"] = "summary";
-
-            auto s = std::static_pointer_cast<ISummary>(metric);
-            serialized["count"] = s->count();
-            serialized["sum"] = s->sum();
-
-            json quantiles = json::array();
-            for (const auto& kv : s->values()) 
+            json serialized;
+            serialized["name"] = name;
+            json jlabels;
+            for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
             {
-                json v;
-                v["quantile"] = kv.first;
-                v["count"] = kv.second;
-                quantiles.emplace_back(v);
+                jlabels[kv->first] = kv->second;
             }
-            serialized["quantiles"] = quantiles;
-        }
-        break;
-        case TypeCode::Histogram:
-        {
-            serialized["type"] = "histogram";
+            if (!jlabels.empty())
+                serialized["labels"] = jlabels;
 
-            auto s = std::static_pointer_cast<IHistogram>(metric);
-            serialized["count"] = s->count();
-            serialized["sum"] = s->sum();
-
-            json buckets;
-            for (const auto& kv : s->values())
+            switch (metric->type())
             {
-                json v;
-                v["bound"] = kv.first;
-                v["count"] = kv.second;
-                buckets.emplace_back(v);
+            case TypeCode::Counter:
+                serialized["type"] = "counter";
+                serialized["value"] = std::static_pointer_cast<ICounterValue>(metric)->value();
+                break;
+            case TypeCode::Gauge:
+                serialized["type"] = "gauge";
+                serialized["value"] = std::static_pointer_cast<IGaugeValue>(metric)->value();
+                break;
+            case TypeCode::Summary:
+                {
+                    serialized["type"] = "summary";
+
+                    auto s = std::static_pointer_cast<ISummary>(metric);
+                    serialized["count"] = s->count();
+                    serialized["sum"] = s->sum();
+
+                    json quantiles = json::array();
+                    for (const auto& kv : s->values())
+                    {
+                        json v;
+                        v["quantile"] = kv.first;
+                        v["count"] = kv.second;
+                        quantiles.emplace_back(v);
+                    }
+                    serialized["quantiles"] = quantiles;
+                }
+                break;
+            case TypeCode::Histogram:
+                {
+                    serialized["type"] = "histogram";
+
+                    auto s = std::static_pointer_cast<IHistogram>(metric);
+                    serialized["count"] = s->count();
+                    serialized["sum"] = s->sum();
+
+                    json buckets;
+                    for (const auto& kv : s->values())
+                    {
+                        json v;
+                        v["bound"] = kv.first;
+                        v["count"] = kv.second;
+                        buckets.emplace_back(v);
+                    }
+                    serialized["buckets"] = buckets;
+                }
+                break;
             }
-            serialized["buckets"] = buckets;
+
+            return serialized;
         }
-        break;
-        }
 
-        return serialized;
-    }
-
-    METRICS_EXPORT std::string serializeJson(const IRegistry& registry)
-    {
-        auto result = json::array();
-
-        auto names = registry.metricNames();
-        for (const auto& name : names)
+        METRICS_EXPORT std::string serializeJson(std::shared_ptr<IRegistry> registry)
         {
-            auto& group = registry.getGroup(name);
-            auto metrics = group.metrics();
-            for (const auto& metric : metrics)
-                result.emplace_back(serialize(name, metric.first, metric.second));
+            auto result = json::array();
+
+            auto names = registry->metricNames();
+            for (const auto& name : names)
+            {
+                auto& group = registry->getGroup(name);
+                auto metrics = group.metrics();
+                for (const auto& metric : metrics)
+                    result.emplace_back(serialize(name, metric.first, metric.second));
+            }
+
+            std::stringstream out;
+            out << result;
+            return out.str();
         }
 
-        std::stringstream out;
-        out << result;
-        return out.str();
-    }
-
-    METRICS_EXPORT std::string serializeJsonl(const IRegistry& registry)
-    {
-        std::stringstream out;
-        auto names = registry.metricNames();
-        for (const auto& name : names)
+        METRICS_EXPORT std::string serializeJsonl(std::shared_ptr<IRegistry> registry)
         {
-            auto& group = registry.getGroup(name);
-            auto metrics = group.metrics();
-            for (const auto& metric : metrics)
-                out << serialize(name, metric.first, metric.second) << std::endl;
-        }
+            std::stringstream out;
+            auto names = registry->metricNames();
+            for (const auto& name : names)
+            {
+                auto& group = registry->getGroup(name);
+                auto metrics = group.metrics();
+                for (const auto& metric : metrics)
+                    out << serialize(name, metric.first, metric.second) << std::endl;
+            }
 
-        return out.str();
+            return out.str();
+        }
     }
 }

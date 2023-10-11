@@ -4,6 +4,7 @@
 #include <metrics/metric.h>
 
 #include <vector>
+#include <tuple>
 
 namespace Metrics
 {
@@ -75,6 +76,6 @@ namespace Metrics
         virtual ~IRegistry() = 0;
     };
 
-    METRICS_EXPORT IRegistry& defaultRegistry();
+    METRICS_EXPORT std::shared_ptr<IRegistry> defaultRegistry();
     METRICS_EXPORT std::shared_ptr<IRegistry> createRegistry();
 }
