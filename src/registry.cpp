@@ -11,8 +11,7 @@
 using namespace std;
 
 
-namespace Metrics
-{
+namespace Metrics {
     struct MetricKeyHasher
     {
         // Hash
@@ -43,6 +42,8 @@ namespace Metrics
         MetricGroup(const MetricGroup&) = delete;
         MetricGroup(MetricGroup&&) = delete;
 
+        typedef decltype(m_metrics)::const_iterator const_iterator;
+
         TypeCode type() const override { return m_type; }
 
         string description() const override {
@@ -69,14 +70,12 @@ namespace Metrics
         {
             unique_lock<mutex> lock(m_mutex);
             auto it = m_metrics.find(labels);
-            if (it == m_metrics.end())
-            {
+            if (it == m_metrics.end()) {
                 auto new_value = factory();
                 it = m_metrics.emplace(move(Labels(labels)), move(new_value)).first;
             }
             auto metric = it->second;
-            if (TValueProxy::value_type::stype() != it->second->type())
-            {
+            if (TValueProxy::value_type::stype() != it->second->type()) {
                 throw logic_error("Inconsistent type of metric");
             }
             return TValueProxy(static_pointer_cast<typename TValueProxy::value_type>(metric));
@@ -126,12 +125,10 @@ namespace Metrics
             unique_lock<mutex> lock(m_mutex);
             auto it = m_groups.find(name);
 
-            if (it == m_groups.end())
-            {
+            if (it == m_groups.end()) {
                 it = m_groups.emplace(name, type).first;
             }
-            else if (type != it->second.type())
-            {
+            else if (type != it->second.type()) {
                 throw logic_error("Inconsistent type of metric");
             }
 
@@ -190,7 +187,6 @@ namespace Metrics
             for (const auto& g : m_groups)
                 result += g.second.size();
             return result;
-
         }
     };
 
@@ -198,9 +194,9 @@ namespace Metrics
 
     IMetricGroup::~IMetricGroup() { }
 
-    IRegistry& defaultRegistry()
+    shared_ptr<IRegistry> defaultRegistry()
     {
-        static RegistryImpl s_registry;
+        static shared_ptr<IRegistry> s_registry = createRegistry();
         return s_registry;
     }
 
