@@ -1,0 +1,29 @@
+name: Integration  
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Integration test
+    
+    runs-on: ubuntu-latest
+
+    services:
+      pushgateway:
+        image: prom/pushgateway:latest
+        ports: [9091]
+      statsd:
+        image: statsd/statsd:latest
+        ports: [8125]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ammaraskar/gcc-problem-matcher@master
+    - run: cmake --preset linux-x64-debug
+    - run: cmake --build --preset linux-x64-debug
+    - run: out/build/linux-x64-debug/integration statsd_tcp job.services.statsd.ports[8125]
+    - run: out/build/linux-x64-debug/integration pushgateway job.services.pushgateway.ports[9091]

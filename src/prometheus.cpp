@@ -170,5 +170,10 @@ namespace Metrics {
                 socket.send(asio::buffer(request.str()));
             }
         };
+
+        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port)
+        {
+            return make_shared<PrometheusOnDemandPushGatewaySink>(host, port);
+        }
     }
 }
