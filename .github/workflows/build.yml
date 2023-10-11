@@ -40,6 +40,12 @@ jobs:
       with:
         arch: ${{ matrix.arch }}
 
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: out/build/${{ steps.preset.outputs.name }}/_deps
+        key: ${{ runner.os }}-${{ hashFiles('ext/**') }}
+
     - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}
 
