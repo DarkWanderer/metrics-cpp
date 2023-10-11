@@ -8,7 +8,7 @@
 namespace Metrics {
     namespace Statsd {
         METRICS_EXPORT std::string serialize(std::shared_ptr<IRegistry> registry);
-        std::shared_ptr<IOnDemandSink> createUdpSink(std::shared_ptr<IRegistry> registry = nullptr);
-        std::shared_ptr<IOnDemandSink> createTcpSink(std::shared_ptr<IRegistry> registry = nullptr);
+        METRICS_EXPORT std::shared_ptr<IOnDemandSink> createUdpSink(std::string host, uint16_t port);
+        METRICS_EXPORT std::shared_ptr<IOnDemandSink> createTcpSink(std::string host, uint16_t port);
     }
 }

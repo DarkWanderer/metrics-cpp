@@ -53,4 +53,4 @@ jobs:
       run: cmake --build --preset ${{ steps.preset.outputs.name }}
 
     - name: Test
-      run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }} -E sanitizers
+      run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
