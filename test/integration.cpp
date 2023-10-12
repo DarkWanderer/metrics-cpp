@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
             sink->send(registry);
     }
     catch (std::exception& e) {
-        std::cerr << e.what();
+        std::cerr << "Exception: " << e.what();
         return 666;
     }
     return 0;

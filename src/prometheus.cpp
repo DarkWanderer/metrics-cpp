@@ -152,10 +152,9 @@ namespace Metrics {
                 auto data = serialize(registry);
 
                 stringstream request;
-                request << "POST /title/ HTTP/1.1" << endl;
+                request << "POST / HTTP/1.1" << endl;
                 request << "Host:" << m_host << endl;
-                request << "User-Agent: C/1.0\r\n";
-                request << "Content-Type: application/json; charset=utf-8" << endl;
+                request << "User-Agent: metrics-cpp/1.0\r\n";
                 request << "Accept: */*\r\n";
                 request << "Content-Length: " << data.size() << endl;
                 request << "Connection: close" << endl << endl;
@@ -168,6 +167,29 @@ namespace Metrics {
                 auto endpoint_iterator = resolver.resolve(query);
                 asio::connect(socket, endpoint_iterator);
                 socket.send(asio::buffer(request.str()));
+
+                // Receive response
+                asio::streambuf response;
+                asio::read_until(socket, response, "\n");
+
+                // Parse response
+                std::istream response_stream(&response);
+                std::string http_version;
+                unsigned int status_code;
+                response_stream >> http_version;
+                response_stream >> status_code;
+
+                std::string status_message;
+                std::getline(response_stream, status_message);
+
+                if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
+                    throw std::logic_error("HTTP response expected");
+                }
+                if (status_code != 200) {
+                    stringstream ss;
+                    ss << "Response code: " << status_code << " reason: " << status_message;
+                    throw std::logic_error(ss.str());
+                }
             }
         };
 
