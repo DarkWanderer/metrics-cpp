@@ -154,13 +154,15 @@ namespace Metrics {
                 auto data = serialize(registry);
 
                 stringstream request;
-                request << "POST /metrics/job/" << m_job << "/instance/" << m_instance << "HTTP / 1.1" << endl;
+                request << "POST /metrics/job/" << m_job << "/instance/" << m_instance << " HTTP/1.1" << endl;
                 request << "Host:" << m_host << endl;
                 request << "User-Agent: metrics-cpp/1.0\r\n";
                 request << "Accept: */*\r\n";
                 request << "Content-Length: " << data.size() << endl;
                 request << "Connection: close" << endl << endl;
                 request << data;
+
+                auto dbg = request.str();
 
                 asio::io_service io_service;
                 tcp::socket socket(io_service);
