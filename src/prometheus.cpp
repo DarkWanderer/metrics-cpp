@@ -140,11 +140,13 @@ namespace Metrics {
         class PrometheusOnDemandPushGatewaySink : public IOnDemandSink
         {
         private:
-            string m_host;
-            uint16_t m_port;
+            const string m_host;
+            const uint16_t m_port;
+            const string m_job;
+            const string m_instance;
         public:
-            PrometheusOnDemandPushGatewaySink(string host, uint16_t port) :
-                m_host(host), m_port(port)
+            PrometheusOnDemandPushGatewaySink(string host, uint16_t port, string job, string instance) :
+                m_host(host), m_port(port), m_job(job), m_instance(instance)
             {};
 
             void send(shared_ptr<IRegistry> registry) override
@@ -152,7 +154,7 @@ namespace Metrics {
                 auto data = serialize(registry);
 
                 stringstream request;
-                request << "POST / HTTP/1.1" << endl;
+                request << "POST /metrics/job/" << m_job << "/instance/" << m_instance << "HTTP / 1.1" << endl;
                 request << "Host:" << m_host << endl;
                 request << "User-Agent: metrics-cpp/1.0\r\n";
                 request << "Accept: */*\r\n";
@@ -193,9 +195,9 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port)
+        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port, std::string job, std::string instance)
         {
-            return make_shared<PrometheusOnDemandPushGatewaySink>(host, port);
+            return make_shared<PrometheusOnDemandPushGatewaySink>(host, port, job, instance);
         }
     }
 }

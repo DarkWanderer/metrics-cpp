@@ -24,6 +24,6 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ammaraskar/gcc-problem-matcher@master
     - run: cmake --preset linux-x64-debug
-    - run: cmake --build --preset linux-x64-debug
+    - run: cmake --build --preset linux-x64-debug --target integration
     - run: out/build/linux-x64-debug/integration statsd_tcp ${{ job.services.statsd.ports[8125] }}
     - run: out/build/linux-x64-debug/integration pushgateway ${{ job.services.pushgateway.ports[9091] }}

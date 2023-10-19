@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
             sink = Statsd::createUdpSink("localhost", port);
         }
         else if (sink_name == "pushgateway") {
-            sink = Prometheus::createPushGatewaySink("localhost", port);
+            sink = Prometheus::createPushGatewaySink("localhost", port, "testjob", "testinstance");
         }
         if (sink)
             sink->send(registry);
