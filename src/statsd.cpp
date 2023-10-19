@@ -105,8 +105,8 @@ namespace Metrics {
                 while (end < data.end())
                 {
                     auto new_end = find(end + 1, data.end(), '\n');
-                    size_t old_dist = end - start;
-                    size_t new_dist = new_end - start;
+                    int64_t old_dist = end - start;
+                    int64_t new_dist = new_end - start;
                     if (new_dist > m_max_packet_size && old_dist > 0)
                     {
                         send(&*start, old_dist);

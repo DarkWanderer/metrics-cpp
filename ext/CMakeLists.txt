@@ -2,6 +2,12 @@ include(FetchContent)
 
 cmake_policy(SET CMP0135 NEW)
 
+if (MSVC)
+    add_compile_options(/w)
+else()
+    add_compile_options(-w)
+endif()
+
 # nlohmann-json
 FetchContent_Declare(
     nlohmann-json
