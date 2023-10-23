@@ -84,9 +84,9 @@ The recommended pattern is to instrument low-level code using standalone metrics
 ```cpp
 auto registry = createRegistry();
 auto gauge = registry->getGauge("my_gauge", {{"some", "label"}});
-auto p = serializePrometheus(*registry);
-auto j = serializeJson(*registry);
-auto s = serializeStatsd(*registry);
+auto p = serializePrometheus(registry);
+auto j = serializeJson(registry);
+auto s = serializeStatsd(registry);
 ```
 
 ### Timers
