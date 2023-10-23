@@ -8,6 +8,8 @@ jobs:
   build-analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - uses: ammaraskar/gcc-problem-matcher@master
       - uses: actions/checkout@v2
