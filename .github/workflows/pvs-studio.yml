@@ -23,7 +23,7 @@ jobs:
         run: |
           cmake  .
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
-          cmake --build --preset linux-x64-debug
+          cmake --build --preset linux-x64-debug --target metrics
       - name: Analyze
         run: |
           pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json -j
@@ -31,7 +31,7 @@ jobs:
         run: |
           plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
       - name: Publish report
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: pvs-report.sarif
           category: PVS-Studio
