@@ -1,4 +1,4 @@
-name: PVS-Studio build analysis
+name: PVS-Studio
 on:
   push:
     branches: [ "main" ]
@@ -6,22 +6,20 @@ on:
     branches: [ "main" ]
 jobs:
   build-analyze:
+    name: Analyze
     runs-on: ubuntu-latest
     steps:
       - uses: ammaraskar/gcc-problem-matcher@master
       - uses: actions/checkout@v2
       - name: Install PVS-Studio
         run: |
-          wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt \
-            | sudo apt-key add -
-          sudo wget -O /etc/apt/sources.list.d/viva64.list \
-            https://files.pvs-studio.com/etc/viva64.list
+          wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt | sudo apt-key add -
+          sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.pvs-studio.com/etc/viva64.list
           sudo apt update
           sudo apt install pvs-studio
           pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
       - name: Build
         run: |
-          cmake  .
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
           cmake --build --preset linux-x64-debug --target metrics
       - name: Analyze
