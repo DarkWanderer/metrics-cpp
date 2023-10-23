@@ -40,6 +40,12 @@ jobs:
           path: PVS-Studio.log
           retention-days: 5
       
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pvs-report-sarif
+          path: pvs-report.sarif
+          retention-days: 5
+          
       - name: Publish report
         uses: github/codeql-action/upload-sarif@v2
         with:
