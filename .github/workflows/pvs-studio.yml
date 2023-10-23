@@ -11,8 +11,8 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: ammaraskar/gcc-problem-matcher@master
       - uses: actions/checkout@v2
+      
       - name: Install PVS-Studio
         run: |
           wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt | sudo apt-key add -
@@ -20,10 +20,12 @@ jobs:
           sudo apt update
           sudo apt install pvs-studio
           pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
+          
       - name: Build
         run: |
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
           cmake --build --preset linux-x64-debug --target metrics
+          
       - name: Analyze
         run: |
           pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json -j \
@@ -31,6 +33,13 @@ jobs:
       - name: Convert report
         run: |
           plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pvs-studio-log
+          path: PVS-Studio.log
+          retention-days: 5
+      
       - name: Publish report
         uses: github/codeql-action/upload-sarif@v2
         with:
