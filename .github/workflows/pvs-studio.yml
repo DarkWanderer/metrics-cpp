@@ -27,7 +27,7 @@ jobs:
       - name: Analyze
         run: |
           pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json -j \
-                                            -e test/ -e out/build/linux-x64-debug/_deps/
+                                      -e out/build/linux-x64-debug/_deps/
       - name: Convert report
         run: |
           plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
