@@ -7,7 +7,7 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
-        "METRICS_TESTS": true
+        "METRICS_BUILD_TESTS": true
       }
     },
     {
@@ -45,7 +45,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -58,7 +58,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -71,7 +71,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "address"
+        "METRICS_BUILD_SANITIZER": "address"
       }
     },
     {
@@ -84,7 +84,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "thread"
+        "METRICS_BUILD_SANITIZER": "thread"
       }
     },
     {
@@ -97,7 +97,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "leak"
+        "METRICS_BUILD_SANITIZER": "leak"
       }
     },
     {
@@ -110,7 +110,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "undefined"
+        "METRICS_BUILD_SANITIZER": "undefined"
       }
     },
     {
@@ -134,7 +134,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -147,7 +147,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -160,7 +160,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -173,7 +173,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -186,7 +186,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "address"
+        "METRICS_BUILD_SANITIZER": "address"
       }
     },
     {
@@ -199,7 +199,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "address"
+        "METRICS_BUILD_SANITIZER": "address"
       }
     },
     {
@@ -237,7 +237,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -250,7 +250,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "SANITIZE": false
+        "METRICS_BUILD_SANITIZER": false
       }
     },
     {
@@ -263,7 +263,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "address"
+        "METRICS_BUILD_SANITIZER": "address"
       }
     },
     {
@@ -276,7 +276,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "thread"
+        "METRICS_BUILD_SANITIZER": "thread"
       }
     },
     {
@@ -289,7 +289,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "leak"
+        "METRICS_BUILD_SANITIZER": "leak"
       }
     },
     {
@@ -302,7 +302,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "SANITIZE": "undefined"
+        "METRICS_BUILD_SANITIZER": "undefined"
       }
     }
   ],

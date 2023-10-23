@@ -140,11 +140,13 @@ namespace Metrics {
         class PrometheusOnDemandPushGatewaySink : public IOnDemandSink
         {
         private:
-            string m_host;
-            uint16_t m_port;
+            const string m_host;
+            const uint16_t m_port;
+            const string m_job;
+            const string m_instance;
         public:
-            PrometheusOnDemandPushGatewaySink(string host, uint16_t port) :
-                m_host(host), m_port(port)
+            PrometheusOnDemandPushGatewaySink(string host, uint16_t port, string job, string instance) :
+                m_host(host), m_port(port), m_job(job), m_instance(instance)
             {};
 
             void send(shared_ptr<IRegistry> registry) override
@@ -152,14 +154,15 @@ namespace Metrics {
                 auto data = serialize(registry);
 
                 stringstream request;
-                request << "POST /title/ HTTP/1.1" << endl;
+                request << "POST /metrics/job/" << m_job << "/instance/" << m_instance << " HTTP/1.1" << endl;
                 request << "Host:" << m_host << endl;
-                request << "User-Agent: C/1.0\r\n";
-                request << "Content-Type: application/json; charset=utf-8" << endl;
+                request << "User-Agent: metrics-cpp/1.0\r\n";
                 request << "Accept: */*\r\n";
                 request << "Content-Length: " << data.size() << endl;
                 request << "Connection: close" << endl << endl;
                 request << data;
+
+                auto dbg = request.str();
 
                 asio::io_service io_service;
                 tcp::socket socket(io_service);
@@ -168,12 +171,35 @@ namespace Metrics {
                 auto endpoint_iterator = resolver.resolve(query);
                 asio::connect(socket, endpoint_iterator);
                 socket.send(asio::buffer(request.str()));
+
+                // Receive response
+                asio::streambuf response;
+                asio::read_until(socket, response, "\n");
+
+                // Parse response
+                std::istream response_stream(&response);
+                std::string http_version;
+                unsigned int status_code;
+                response_stream >> http_version;
+                response_stream >> status_code;
+
+                std::string status_message;
+                std::getline(response_stream, status_message);
+
+                if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
+                    throw std::logic_error("HTTP response expected");
+                }
+                if (status_code != 200) {
+                    stringstream ss;
+                    ss << "Response code: " << status_code << " reason: " << status_message;
+                    throw std::logic_error(ss.str());
+                }
             }
         };
 
-        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port)
+        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port, std::string job, std::string instance)
         {
-            return make_shared<PrometheusOnDemandPushGatewaySink>(host, port);
+            return make_shared<PrometheusOnDemandPushGatewaySink>(host, port, job, instance);
         }
     }
 }
