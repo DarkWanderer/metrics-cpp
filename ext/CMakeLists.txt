@@ -49,3 +49,6 @@ endif()
 
 add_library(asio INTERFACE)
 target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
+
+# curl
+find_package(CURL REQUIRED)
