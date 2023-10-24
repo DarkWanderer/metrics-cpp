@@ -19,20 +19,21 @@ jobs:
           sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.pvs-studio.com/etc/viva64.list
           sudo apt update
           sudo apt install pvs-studio
-          pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
-          
+
+      - name: Ingest credentials
+        run: pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
+
+      - name: Configure
+        run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
+        
       - name: Build
-        run: |
-          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
-          cmake --build --preset linux-x64-debug --target metrics
+        run: cmake --build --preset linux-x64-debug --target metrics
           
       - name: Analyze
-        run: |
-          pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json -j \
-                                      -e out/build/linux-x64-debug/_deps/
+        run: pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json 
+                                         -e out/build/linux-x64-debug/_deps/ -j
       - name: Convert report
-        run: |
-          plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
+        run: plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
           
       - uses: actions/upload-artifact@v3
         with:
