@@ -30,8 +30,8 @@ jobs:
         run: cmake --build --preset linux-x64-debug --target metrics
           
       - name: Analyze
-        run: pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json -j \
-                                         -e out/build/linux-x64-debug/_deps/
+        run: pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json 
+                                         -e out/build/linux-x64-debug/_deps/ -j
       - name: Convert report
         run: plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
           
