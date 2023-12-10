@@ -120,4 +120,4 @@ This project utilizes following 3rd-party libraries and tools
 * [Catch2](https://github.com/catchorg/Catch2) - C++ testing framework
 * [nlohmann-json](https://github.com/nlohmann/json/) - fast C++ JSON library
 * [stream-quantiles](https://github.com/Liam0205/stream-quantiles) - C++ CKMS algorithm implementation
-* [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
+* [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code
