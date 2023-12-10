@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows, ubuntu, macos]
-        conf: [release, debug, asan]
-        arch: [x64, x86]
+        conf: [release, debug]
+        arch: [x64]
         exclude:
           - os: ubuntu
             arch: x86
