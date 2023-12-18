@@ -36,13 +36,13 @@ jobs:
       - name: Convert report
         run: plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pvs-studio-log
           path: PVS-Studio.log
           retention-days: 5
       
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pvs-report-sarif
           path: pvs-report.sarif
