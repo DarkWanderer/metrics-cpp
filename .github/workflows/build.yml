@@ -24,11 +24,11 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
 
     steps:
-    - uses: actions/checkout@v4
-
+    - uses: lukka/get-cmake@latest
     - uses: ammaraskar/msvc-problem-matcher@master
     - uses: ammaraskar/gcc-problem-matcher@master
-
+    - uses: actions/checkout@v4
+  
     - name: Set preset name
       id: preset
       shell: bash
