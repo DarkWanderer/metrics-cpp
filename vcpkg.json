@@ -1,0 +1,9 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "dependencies": [
+        "asio",
+        "curl",
+        "nlohmann-json"
+    ],
+    "builtin-baseline": "13bde2ff13192e1b2fdd37bd9b475c7665ae6ae5"
+}
