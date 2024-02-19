@@ -46,6 +46,10 @@ jobs:
         path: out/build/${{ steps.preset.outputs.name }}/_deps
         key: ${{ runner.os }}-${{ hashFiles('ext/**') }}
 
+    - name: Install curl
+      if: ${{ matrix.os == "ubuntu" }}
+      run: sudo apt install libcurl-dev
+
     - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}
 
