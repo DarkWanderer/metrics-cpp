@@ -32,9 +32,7 @@ jobs:
     - name: Set preset name
       id: preset
       shell: bash
-      run: |
-        echo "name=${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
-        aefgaegdgf
+      run: echo "name=${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
 
     - name: Set up Windows compiler
       uses: ilammy/msvc-dev-cmd@v1
