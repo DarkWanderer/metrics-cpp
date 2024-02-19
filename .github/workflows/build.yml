@@ -34,17 +34,17 @@ jobs:
       shell: bash
       run: |
         echo "name=${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
+        aefgaegdgf
 
     - name: Set up Windows compiler
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
 
-    - name: Configure
-      run: cmake --preset ${{ steps.preset.outputs.name }}
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11 
 
-    - name: Build
-      run: cmake --build --preset ${{ steps.preset.outputs.name }}
-
-    - name: Test
-      run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
+    - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
+      uses: lukka/run-cmake@v10
+      with:
+        workflowPreset: ${{ steps.preset.outputs.name }}
