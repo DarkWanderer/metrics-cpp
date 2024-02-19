@@ -47,7 +47,7 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('ext/**') }}
 
     - name: Install curl
-      if: ${{ matrix.os == "ubuntu" }}
+      if: matrix.os == 'ubuntu'
       run: sudo apt install libcurl-dev
 
     - name: Configure
