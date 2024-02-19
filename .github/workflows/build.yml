@@ -45,4 +45,6 @@ jobs:
     - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
       uses: lukka/run-cmake@v10
       with:
-        workflowPreset: ${{ steps.preset.outputs.name }}
+        configurePreset: ${{ steps.preset.outputs.name }}
+        buildPreset: ${{ steps.preset.outputs.name }}
+        testPreset: ${{ steps.preset.outputs.name }}
