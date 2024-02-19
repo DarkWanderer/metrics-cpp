@@ -1,6 +1,7 @@
 # metrics-cpp
 
 [![Build](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml/badge.svg)](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml)
+![Readiness](https://img.shields.io/badge/readiness-alpha-red)
 
 A low-footprint, high-performance C++ metrics library implementing commonly used metric classes - Counter, Gauge, Histogram, Summary - in idiomatic and thread-safe faction
 
@@ -28,7 +29,18 @@ The design goals of this library are the following:
 
 ## Limitations & compromises
 
-Due to limited number of locks employed, there is no strong consistency guarantee between different metrics. If a particular thread changes two counters and serialization happens in the middle, you may see a value for one counter increasing but not for the other - until the next time metrics are collected. Hence, care must be taken when creating alerts based on metrics differential
+Due to limited number of locks employed, there is no strong consistency guarantee between different metrics. If a particular thread changes two counters and serialization happens in the middle, you may see a value for one counter increasing but not for the other - until the next time metrics are collected. Hence, care must be taken when creating alerts based on metrics differential. Another compromise stemming from minimized locking requirements is inability to _remove_ metrics from a `Registry` - however, that is something which is not supported by Prometheus anyway
+
+## Readiness
+
+|Feature|Readiness|
+|----|----|
+|Core API|![GA](https://img.shields.io/badge/GA-green)|
+|Serialization: JSON|![icon](https://img.shields.io/badge/GA-green)|
+|Serialization: Prometheus|![icon](https://img.shields.io/badge/GA-green)|
+|Sink: Statsd UDP|![icon](https://img.shields.io/badge/beta-yellow)|
+|Sink: Statsd TCP|![icon](https://img.shields.io/badge/alpha-red)|
+|Sink: PushGateway|![icon](https://img.shields.io/badge/alpha-red)|
 
 ## Usage examples
 
@@ -104,6 +116,8 @@ for (auto file: files)
 
 This project utilizes following 3rd-party libraries and tools
 
+* [asio](https://github.com/chriskohlhoff/asio) - asynchronous socket wrapper library
+* [Catch2](https://github.com/catchorg/Catch2) - C++ testing framework
 * [nlohmann-json](https://github.com/nlohmann/json/) - fast C++ JSON library
 * [stream-quantiles](https://github.com/Liam0205/stream-quantiles) - C++ CKMS algorithm implementation
-* [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
+* [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code
