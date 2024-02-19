@@ -42,7 +42,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11 
 
-    - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
+    - name: Run CMake
       uses: lukka/run-cmake@v10
       with:
         configurePreset: ${{ steps.preset.outputs.name }}

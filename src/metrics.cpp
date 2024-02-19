@@ -1,6 +1,6 @@
 #include <metrics/metric.h>
 
-#include <stream-quantiles/ckms.h>
+// #include <stream-quantiles/ckms.h>
 
 #include <algorithm>
 #include <mutex>
@@ -103,7 +103,7 @@ namespace Metrics
 
 	// Implements CKMS algorithm for approximate quantile calculation
 	// Utilizes locking internally. Using Histogram is recommended instead
-	class SummaryImpl : public ISummary {
+	/*class SummaryImpl : public ISummary {
 	private:
         const vector<double> m_quantiles;
 		CounterImpl m_count;
@@ -139,7 +139,7 @@ namespace Metrics
 
 		uint64_t count() const override { return m_count; };
 		double sum() const override { return m_sum; };
-	};
+	};*/
 
 	class HistogramImpl : public IHistogram {
 	private:
@@ -193,6 +193,6 @@ namespace Metrics
 	// Definitions for functions referenced in registry.cpp
 	std::shared_ptr<ICounterValue> makeCounter() { return std::make_shared<CounterImpl>(); };
 	std::shared_ptr<IGaugeValue> makeGauge() { return std::make_shared<GaugeImpl>(); };
-	std::shared_ptr<ISummary> makeSummary(const vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
+	//std::shared_ptr<ISummary> makeSummary(const vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
 	std::shared_ptr<IHistogram> makeHistogram(const vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
 }

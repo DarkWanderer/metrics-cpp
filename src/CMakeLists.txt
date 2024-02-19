@@ -6,6 +6,9 @@ else()
     add_compile_options(-Wall -Wno-unknown-pragmas)
 endif()
 
+# HACK to detect vcpkg include directories
+include_directories(${ZLIB_INCLUDE_DIR})
+
 file(GLOB METRICS_SOURCE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_library(metrics SHARED ${METRICS_SOURCE_FILES})
