@@ -48,7 +48,7 @@ jobs:
 
     - name: Install curl
       if: matrix.os == 'ubuntu'
-      run: sudo apt install libcurl-dev
+      run: sudo apt install libcurl4-openssl-dev
 
     - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}
