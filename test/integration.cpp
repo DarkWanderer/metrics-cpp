@@ -6,7 +6,7 @@
 using namespace Metrics;
 using namespace std;
 
-auto createTestRegistry() {
+std::shared_ptr<IRegistry> createTestRegistry() {
     auto registry = createRegistry();
     registry->getCounter("counter1") += 1;
     registry->getCounter("counter2", { { "label", "value1" } }) += 1;
