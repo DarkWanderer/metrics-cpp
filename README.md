@@ -112,6 +112,20 @@ for (auto file: files)
 }
 ```
 
+### Sink URL
+
+```cpp
+// Set this value in config
+std::string url = "statsd+udp://localhost:1234"; 
+
+auto registry = createRegistry();
+auto gauge = registry->getGauge("my_gauge", {{"some", "label"}});
+gauge = 5.0;
+auto sink = createOnDemandSink(url);
+if (sink)
+    sink->send(registry);
+```
+
 # 3rd-party tools and libraries
 
 This project utilizes following 3rd-party libraries and tools
