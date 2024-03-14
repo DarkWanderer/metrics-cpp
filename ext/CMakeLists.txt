@@ -5,7 +5,7 @@ cmake_policy(SET CMP0135 NEW)
 if (MSVC)
     add_compile_options(/w)
 else()
-    add_compile_options(-w)
+    add_compile_options(-w -fPIC)
 endif()
 
 # stream-quantiles
