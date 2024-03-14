@@ -8,7 +8,7 @@ namespace Metrics {
     IOnDemandSink::~IOnDemandSink() {}
     IRegistrySink::~IRegistrySink() {}
 
-    METRICS_EXPORT std::shared_ptr<IOnDemandSink> Metrics::createOnDemandSink(const std::string& url_string)
+    METRICS_EXPORT std::shared_ptr<IOnDemandSink> createOnDemandSink(const std::string& url_string)
     {
         Url url(url_string);
         const auto& scheme = url.scheme();
@@ -23,7 +23,7 @@ namespace Metrics {
         return std::shared_ptr<IOnDemandSink>();
     }
 
-    METRICS_EXPORT std::shared_ptr<IRegistrySink> Metrics::createIRegistrySink(const std::string& url_string)
+    METRICS_EXPORT std::shared_ptr<IRegistrySink> createIRegistrySink(const std::string& url_string)
     {
         Url url(url_string);
         const auto& scheme = url.scheme();
