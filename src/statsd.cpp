@@ -87,10 +87,10 @@ namespace Metrics {
                 udp::resolver::query query(m_host, to_string(m_port));
                 auto endpoint_iterator = resolver.resolve(query);
                 auto endpoint = udp::endpoint(*endpoint_iterator); // Result guaranteed to be valid
+                udp::socket socket(m_io_service);
+                socket.open(endpoint.protocol());
 
                 auto send = [&](const char* begin, size_t count) {
-                    udp::socket socket(m_io_service);
-                    socket.open(endpoint.protocol());
                     socket.send_to(asio::buffer(begin, count), endpoint);
                 };
 
