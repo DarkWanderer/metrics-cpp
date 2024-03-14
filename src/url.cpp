@@ -347,7 +347,7 @@ namespace {
         }
         if (null_len == 1) {
             null_pos = nfields;
-            null_len = 1;
+            // null_len = 1; // why?
         }
 
         // Encode normalized IPv6
@@ -752,9 +752,9 @@ void Url::parse_url() const {
                     throw Url::parse_error("Missing ] in '" + std::string(s, e - s) + "'");
                 // decode IPvFuture protocol version
                 if (*b == 'v') {
-                    if (is_hexdigit(*++b) && ip_v >= 0) {
+                    if (is_hexdigit(*++b)) {
                         ip_v = get_hex_digit(*b);
-                        if (is_hexdigit(*++b)) {
+                        if (is_hexdigit(*++b) && ip_v >= 0) {
                             ip_v = (ip_v << 8) | get_hex_digit(*b);
                         }
                     }
