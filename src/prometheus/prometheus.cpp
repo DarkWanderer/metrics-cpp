@@ -153,7 +153,7 @@ namespace Metrics {
                 accept();
             }
         public:
-            PrometheusHttpServerSink(shared_ptr<IRegistry> registry, const string& address, string port)
+            PrometheusHttpServerSink(shared_ptr<IRegistry> registry, const string& address, const string& port)
             {
                 tcp::resolver resolver(m_io_service);
                 tcp::resolver::query query(address, port);
@@ -174,7 +174,7 @@ namespace Metrics {
 
         };
 
-        shared_ptr<IRegistrySink> createPrometheusHttpServerSink(shared_ptr<IRegistry> registry, string address, string port)
+        shared_ptr<IRegistrySink> createPrometheusHttpServerSink(shared_ptr<IRegistry> registry, const string& address, const string& port)
         {
             if (!registry)
                 registry = createRegistry();
@@ -190,7 +190,7 @@ namespace Metrics {
             const string m_job;
             const string m_instance;
         public:
-            PrometheusOnDemandPushGatewaySink(string host, string port, string job, string instance) :
+            PrometheusOnDemandPushGatewaySink(const string& host, const string& port, string job, string instance) :
                 m_host(host), m_port(port), m_job(job), m_instance(instance)
             {};
 
@@ -242,7 +242,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, string port, std::string job, std::string instance)
+        shared_ptr<IOnDemandSink> createPushGatewaySink(const string& host, const string& port, string job, std::string instance)
         {
             return make_shared<PrometheusOnDemandPushGatewaySink>(host, port, job, instance);
         }

@@ -73,7 +73,7 @@ namespace Metrics {
             string m_port;
             const size_t m_max_packet_size;
         public:
-            StatsdOnDemandUdpSink(string host, string port) :
+            StatsdOnDemandUdpSink(const string& host, const string& port) :
                 m_io_service(),
                 m_host(host),
                 m_port(port),
@@ -132,7 +132,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createUdpSink(string host, string port)
+        shared_ptr<IOnDemandSink> createUdpSink(const string& host, const string& port)
         {
             return make_shared<StatsdOnDemandUdpSink>(host, port);
         }
@@ -143,7 +143,7 @@ namespace Metrics {
             string m_host;
             string m_port;
         public:
-            StatsdOnDemandTcpSink(string host, string port) :
+            StatsdOnDemandTcpSink(const string& host, const string& port) :
                 m_io_service(),
                 m_host(host),
                 m_port(port)
@@ -169,7 +169,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createTcpSink(string host, string port)
+        shared_ptr<IOnDemandSink> createTcpSink(const string& host, const string& port)
         {
             return make_shared<StatsdOnDemandTcpSink>(host, port);
         }
