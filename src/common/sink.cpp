@@ -20,13 +20,12 @@ namespace Metrics {
         try 
         {
             const auto& scheme = url.scheme();
-            auto port = std::stoi(url.port());
             if (scheme == "statsd+udp")
-                return Statsd::createUdpSink(url.host(), port);
+                return Statsd::createUdpSink(url.host(), url.port());
             if (scheme == "statsd+tcp")
-                return Statsd::createTcpSink(url.host(), port);
+                return Statsd::createTcpSink(url.host(), url.port());
             if (scheme == "pushgateway+http" || scheme == "pushgateway+https")
-                return Prometheus::createPushGatewaySink(url.host(), port, "job", "instance");
+                return Prometheus::createPushGatewaySink(url.host(), url.port(), "job", "instance");
         }
         catch (std::exception&) 
         {
@@ -35,7 +34,7 @@ namespace Metrics {
         return std::shared_ptr<IOnDemandSink>();
     }
 
-    METRICS_EXPORT std::shared_ptr<IRegistrySink> createIRegistrySink(const std::string& url_string)
+    METRICS_EXPORT std::shared_ptr<IRegistrySink> createRegistrySink(std::shared_ptr<IRegistry> registry, const std::string& url_string)
     {
         auto ru = boost::urls::parse_uri_reference(url_string);
         if (!ru)
@@ -49,8 +48,8 @@ namespace Metrics {
         {
         }
 
-        //if (scheme == "prometheus")
-            //return createPrometheusHttpServerSink()
+        if (scheme == "prometheus+http")
+            return Prometheus::createPrometheusHttpServerSink(registry, url.host(), url.port());
 
         return std::shared_ptr<IRegistrySink>();
     }

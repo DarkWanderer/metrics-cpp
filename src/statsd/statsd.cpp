@@ -70,10 +70,10 @@ namespace Metrics {
         private:
             asio::io_service m_io_service;
             string m_host;
-            uint16_t m_port;
+            string m_port;
             const size_t m_max_packet_size;
         public:
-            StatsdOnDemandUdpSink(string host, uint16_t port) :
+            StatsdOnDemandUdpSink(string host, string port) :
                 m_io_service(),
                 m_host(host),
                 m_port(port),
@@ -85,7 +85,7 @@ namespace Metrics {
             {
                 // Resolve name
                 udp::resolver resolver(m_io_service);
-                udp::resolver::query query(m_host, to_string(m_port));
+                udp::resolver::query query(m_host, m_port);
                 auto endpoint_iterator = resolver.resolve(query);
                 auto endpoint = udp::endpoint(*endpoint_iterator); // Result guaranteed to be valid
                 udp::socket socket(m_io_service);
@@ -132,7 +132,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createUdpSink(string host, uint16_t port)
+        shared_ptr<IOnDemandSink> createUdpSink(string host, string port)
         {
             return make_shared<StatsdOnDemandUdpSink>(host, port);
         }
@@ -141,9 +141,9 @@ namespace Metrics {
         private:
             asio::io_service m_io_service;
             string m_host;
-            uint16_t m_port;
+            string m_port;
         public:
-            StatsdOnDemandTcpSink(string host, uint16_t port) :
+            StatsdOnDemandTcpSink(string host, string port) :
                 m_io_service(),
                 m_host(host),
                 m_port(port)
@@ -160,7 +160,7 @@ namespace Metrics {
                 tcp::resolver resolver(m_io_service);
 
                 // Resolve to one or more endpoints
-                tcp::resolver::query query(m_host, to_string(m_port));
+                tcp::resolver::query query(m_host, m_port);
                 auto endpoint_iterator = resolver.resolve(query);
                 asio::connect(socket, endpoint_iterator);
 
@@ -169,7 +169,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createTcpSink(string host, uint16_t port)
+        shared_ptr<IOnDemandSink> createTcpSink(string host, string port)
         {
             return make_shared<StatsdOnDemandTcpSink>(host, port);
         }

@@ -121,32 +121,76 @@ namespace Metrics {
         class PrometheusHttpServerSink : public IRegistrySink {
         private:
             shared_ptr<IRegistry> m_registry;
+            shared_ptr<tcp::acceptor> m_acceptor;
+            thread m_thread;
+            asio::io_service m_io_service;
 
+            void run()
+            {
+                // adds some work to the io_service
+                accept();
+                m_io_service.run();
+            }
+
+            void accept()
+            {
+                auto socket = make_shared<tcp::socket>(m_io_service);
+                m_acceptor->async_accept(*socket, bind(&PrometheusHttpServerSink::handle, this, socket));
+            }
+
+            void handle(shared_ptr<tcp::socket> socket)
+            {
+                asio::streambuf response;
+                std::ostream res_stream(&response);
+
+
+                res_stream << "HTTP/1.0 200 OK" << endl
+                    << "Content-Type: text/html; charset=UTF-8" << endl
+                    << "Content-Length: 5" << endl << endl
+                    << "Hello";
+                asio::write(*socket, response);
+                socket->close();
+                accept();
+            }
         public:
-            PrometheusHttpServerSink(shared_ptr<IRegistry> registry) : m_registry(registry) {};
+            PrometheusHttpServerSink(shared_ptr<IRegistry> registry, const string& address, string port)
+            {
+                tcp::resolver resolver(m_io_service);
+                tcp::resolver::query query(address, port);
+                auto endpoint_iterator = resolver.resolve(query);
+                m_registry = registry;
+                m_acceptor = make_shared<tcp::acceptor>(m_io_service, *endpoint_iterator.begin());
+                m_thread = thread(&PrometheusHttpServerSink::run, this);
+            };
+
+            virtual ~PrometheusHttpServerSink() {
+                m_io_service.stop();
+                m_thread.join();
+            }
 
             virtual shared_ptr<IRegistry> registry() const override {
                 return m_registry;
             };
+
         };
 
-        shared_ptr<IRegistrySink> createPrometheusHttpServerSink(shared_ptr<IRegistry> registry)
+        shared_ptr<IRegistrySink> createPrometheusHttpServerSink(shared_ptr<IRegistry> registry, string address, string port)
         {
             if (!registry)
                 registry = createRegistry();
 
-            return make_shared<PrometheusHttpServerSink>(registry);
+            return make_shared<PrometheusHttpServerSink>(registry, address, port);
         }
 
         class PrometheusOnDemandPushGatewaySink : public IOnDemandSink
         {
         private:
             const string m_host;
-            const uint16_t m_port;
+            const string m_port;
             const string m_job;
             const string m_instance;
         public:
-            PrometheusOnDemandPushGatewaySink(string host, uint16_t port, string job, string instance) :
+            PrometheusOnDemandPushGatewaySink(string host, string port, string job, string instance) :
                 m_host(host), m_port(port), m_job(job), m_instance(instance)
             {};
 
@@ -168,7 +212,7 @@ namespace Metrics {
                 asio::io_service io_service;
                 tcp::socket socket(io_service);
                 tcp::resolver resolver(io_service);
-                tcp::resolver::query query(m_host, std::to_string(m_port));
+                tcp::resolver::query query(m_host, m_port);
                 auto endpoint_iterator = resolver.resolve(query);
                 asio::connect(socket, endpoint_iterator);
                 socket.send(asio::buffer(request.str()));
@@ -198,7 +242,7 @@ namespace Metrics {
             }
         };
 
-        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, uint16_t port, std::string job, std::string instance)
+        shared_ptr<IOnDemandSink> createPushGatewaySink(std::string host, string port, std::string job, std::string instance)
         {
             return make_shared<PrometheusOnDemandPushGatewaySink>(host, port, job, instance);
         }

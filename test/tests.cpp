@@ -304,7 +304,7 @@ TEST_CASE("Sink.URL", "[url][sink]")
         "pushgateway+http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
         "pushgateway+https://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
 
-        // "prometheus+https://localhost:8888",
+        "prometheus+http://0.0.0.0:8888",
     };
 
     for (const auto& url : urls) {
