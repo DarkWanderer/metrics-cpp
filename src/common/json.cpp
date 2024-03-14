@@ -1,8 +1,6 @@
 #include <metrics/json.h>
 
-#pragma warning(push, 1)
 #include <boost/json.hpp>
-#pragma warning(pop)
 
 #include <sstream>
 
