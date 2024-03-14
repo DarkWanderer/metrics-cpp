@@ -25,6 +25,7 @@ target_include_directories(quantiles INTERFACE ${quantiles_SOURCE_DIR})
 
 # Boost
 set(BOOST_INCLUDE_LIBRARIES asio url json)
+set(BOOST_USE_STATIC_LIBS ON)
 set(BOOST_ENABLE_CMAKE ON)
 message(STATUS "Downloading and extracting boost library sources. This will take some time...")
 set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
