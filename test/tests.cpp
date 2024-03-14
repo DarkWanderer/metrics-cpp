@@ -212,7 +212,7 @@ TEST_CASE("Serialize.Json", "[json]")
     auto registry = createReferenceRegistry();
     auto result = Metrics::Json::serializeJson(registry);
 
-    CHECK_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1},{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
+    CHECK_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"name":"counter2","labels":{"label":"value1"},"type":"counter","value":1},{"name":"counter2","labels":{"label":"value2"},"type":"counter","value":2},{"name":"gauge1","type":"gauge","value":1E2},{"name":"gauge2","labels":{"another":"label"},"type":"gauge","value":2E2},{"name":"histogram1","type":"histogram","count":2,"sum":3E0,"buckets":[{"bound":1E0,"count":1},{"bound":2E0,"count":2},{"bound":5E0,"count":2}]},{"name":"histogram2","labels":{"more":"labels"},"type":"histogram","count":2,"sum":7E0,"buckets":[{"bound":1E0,"count":0},{"bound":2E0,"count":0},{"bound":5E0,"count":2}]},{"name":"summary1","type":"summary","count":3,"sum":6E0,"quantiles":[{"quantile":5E-1,"count":1},{"quantile":9E-1,"count":2},{"quantile":9.9E-1,"count":2},{"quantile":9.99E-1,"count":2}]},{"name":"summary2","labels":{"summary":"label"},"type":"summary","count":3,"sum":1.1E1,"quantiles":[{"quantile":5E-1,"count":3},{"quantile":9E-1,"count":3},{"quantile":9.9E-1,"count":3},{"quantile":9.99E-1,"count":3}]}])"));
 }
 
 TEST_CASE("Serialize.Jsonl", "[jsonl]")
@@ -221,14 +221,14 @@ TEST_CASE("Serialize.Jsonl", "[jsonl]")
     auto result = Metrics::Json::serializeJsonl(registry);
 
     CHECK_THAT(result, Equals(R"({"name":"counter1","type":"counter","value":1}
-{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1}
-{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2}
-{"name":"gauge1","type":"gauge","value":100.0}
-{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0}
-{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"}
-{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"}
-{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"}
-{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}
+{"name":"counter2","labels":{"label":"value1"},"type":"counter","value":1}
+{"name":"counter2","labels":{"label":"value2"},"type":"counter","value":2}
+{"name":"gauge1","type":"gauge","value":1E2}
+{"name":"gauge2","labels":{"another":"label"},"type":"gauge","value":2E2}
+{"name":"histogram1","type":"histogram","count":2,"sum":3E0,"buckets":[{"bound":1E0,"count":1},{"bound":2E0,"count":2},{"bound":5E0,"count":2}]}
+{"name":"histogram2","labels":{"more":"labels"},"type":"histogram","count":2,"sum":7E0,"buckets":[{"bound":1E0,"count":0},{"bound":2E0,"count":0},{"bound":5E0,"count":2}]}
+{"name":"summary1","type":"summary","count":3,"sum":6E0,"quantiles":[{"quantile":5E-1,"count":1},{"quantile":9E-1,"count":2},{"quantile":9.9E-1,"count":2},{"quantile":9.99E-1,"count":2}]}
+{"name":"summary2","labels":{"summary":"label"},"type":"summary","count":3,"sum":1.1E1,"quantiles":[{"quantile":5E-1,"count":3},{"quantile":9E-1,"count":3},{"quantile":9.9E-1,"count":3},{"quantile":9.99E-1,"count":3}]}
 )"));
 }
 

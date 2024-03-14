@@ -8,15 +8,6 @@ else()
     add_compile_options(-w)
 endif()
 
-# nlohmann-json
-FetchContent_Declare(
-    nlohmann-json
-    GIT_REPOSITORY https://github.com/nlohmann/json/
-    GIT_TAG        v3.11.2
-    GIT_SHALLOW     TRUE
-)
-FetchContent_MakeAvailable(nlohmann-json)
-
 # stream-quantiles
 FetchContent_Declare(
     quantiles
@@ -33,7 +24,7 @@ add_library(quantiles INTERFACE)
 target_include_directories(quantiles INTERFACE ${quantiles_SOURCE_DIR})
 
 # Boost
-set(BOOST_INCLUDE_LIBRARIES asio url)
+set(BOOST_INCLUDE_LIBRARIES asio url json)
 set(BOOST_ENABLE_CMAKE ON)
 message(STATUS "Downloading and extracting boost library sources. This will take some time...")
 set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress

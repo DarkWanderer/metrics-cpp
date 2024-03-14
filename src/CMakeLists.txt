@@ -10,6 +10,6 @@ file(GLOB METRICS_SOURCE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.
 
 add_library(metrics SHARED ${METRICS_SOURCE_FILES})
 target_include_directories(metrics PUBLIC "${PROJECT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}")
-target_link_libraries(metrics PRIVATE nlohmann_json::nlohmann_json quantiles Boost::asio Boost::url)
+target_link_libraries(metrics PRIVATE quantiles Boost::asio Boost::url Boost::json)
 generate_export_header(metrics)
 add_library(METRICS::lib ALIAS metrics)
