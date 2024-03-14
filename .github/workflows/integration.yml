@@ -15,15 +15,18 @@ jobs:
     services:
       pushgateway:
         image: prom/pushgateway:latest
-        ports: [9091]
+        ports: 
+          - "9091:9091"
       statsd:
-        image: statsd/statsd:latest
-        ports: [8125]
+        image: prom/statsd-exporter:latest
+        ports: 
+          - "9125:9125/udp"
+          - "9125:9125/tcp"
 
     steps:
     - uses: actions/checkout@v4
     - run: cmake --preset linux-x64-debug
     - run: cmake --build --preset linux-x64-debug --target integration
-    - run: out/build/linux-x64-debug/integration statsd-tcp://localhost:${{ job.services.statsd.ports[8125] }}
-    - run: out/build/linux-x64-debug/integration statsd-udp://localhost:${{ job.services.statsd.ports[8125] }}
-    - run: out/build/linux-x64-debug/integration http://localhost:${{ job.services.pushgateway.ports[9091] }}/metrics/job/test_job/instance/test_instance
+    - run: out/build/linux-x64-debug/integration statsd+tcp://localhost:9125
+    - run: out/build/linux-x64-debug/integration statsd+udp://localhost:9125
+    - run: out/build/linux-x64-debug/integration pushgateway+http://localhost:9091/metrics/job/test_job/instance/test_instance

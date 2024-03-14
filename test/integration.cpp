@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         if (sink)
             sink->send(registry);
         else
-            std::cerr << "Could not create sink for url " << url;
+            throw logic_error("Could not create sink for url");
     }
     catch (std::exception& e) {
         std::cerr << "Exception: " << e.what();
