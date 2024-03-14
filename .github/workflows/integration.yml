@@ -29,4 +29,4 @@ jobs:
     - run: cmake --build --preset linux-x64-debug --target integration
     - run: out/build/linux-x64-debug/integration statsd-tcp://localhost:9125
     - run: out/build/linux-x64-debug/integration statsd-udp://localhost:9125
-    - run: out/build/linux-x64-debug/integration http://localhost:9125/metrics/job/test_job/instance/test_instance
+    - run: out/build/linux-x64-debug/integration http://localhost:9091/metrics/job/test_job/instance/test_instance
