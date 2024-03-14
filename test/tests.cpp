@@ -25,59 +25,59 @@ TEST_CASE("Metric.Labels", "[metric][labels]")
     auto l2 = Labels{ {"c", "d"}, {"a", "b"} };
     auto l3 = Labels{ {"a", "b"}, {"c", "e"} };
 
-    REQUIRE((l1 == l2));
-    REQUIRE((l1 != l3));
-    REQUIRE((l1 < l3));
+    CHECK((l1 == l2));
+    CHECK((l1 != l3));
+    CHECK((l1 < l3));
 
     l3["c"] = "d";
-    REQUIRE((l1 == l3));
+    CHECK((l1 == l3));
 
-    REQUIRE((Labels{ {"a", "a1"}, { "a", "a2" } } == Labels{ {"a", "a1"} }));
+    CHECK((Labels{ {"a", "a1"}, { "a", "a2" } } == Labels{ {"a", "a1"} }));
 }
 
 TEST_CASE("Metric.Counter", "[metric][counter]")
 {
     Counter counter;
-    REQUIRE(counter == 0);
+    CHECK(counter == 0);
     counter++;
-    REQUIRE(counter == 1);
+    CHECK(counter == 1);
 
     auto counter2 = counter;
     auto counter3(counter);
     auto counter4{ counter };
 
     counter += 99;
-    REQUIRE(counter == 100);
-    REQUIRE(counter2 == 100);
-    REQUIRE(counter3 == 100);
-    REQUIRE(counter4 == 100);
+    CHECK(counter == 100);
+    CHECK(counter2 == 100);
+    CHECK(counter3 == 100);
+    CHECK(counter4 == 100);
 
     counter.reset();
-    REQUIRE(counter == 0);
-    REQUIRE(counter2 == 0);
-    REQUIRE(counter3 == 0);
-    REQUIRE(counter4 == 0);
+    CHECK(counter == 0);
+    CHECK(counter2 == 0);
+    CHECK(counter3 == 0);
+    CHECK(counter4 == 0);
 }
 
 TEST_CASE("Metric.Gauge", "[metric][gauge]")
 {
     Gauge gauge;
-    REQUIRE(gauge == 0);
+    CHECK(gauge == 0);
     gauge = 5.0;
 
     auto gauge2 = gauge;
     auto gauge3(gauge);
     auto gauge4{ gauge };
 
-    REQUIRE(gauge == 5.0);
-    REQUIRE(gauge2 == 5.0);
-    REQUIRE(gauge3 == 5.0);
-    REQUIRE(gauge4 == 5.0);
+    CHECK(gauge == 5.0);
+    CHECK(gauge2 == 5.0);
+    CHECK(gauge3 == 5.0);
+    CHECK(gauge4 == 5.0);
 
     gauge += 3.0;
-    REQUIRE(gauge == 8.0);
+    CHECK(gauge == 8.0);
     gauge -= 5.0;
-    REQUIRE(gauge == 3.0);
+    CHECK(gauge == 3.0);
 }
 
 TEST_CASE("Metric.Histogram", "[metric][histogram]")
@@ -90,15 +90,15 @@ TEST_CASE("Metric.Histogram", "[metric][histogram]")
 
     auto values = histogram.values();
 
-    REQUIRE(histogram.sum() == 13);
-    REQUIRE(histogram.count() == 4);
-    REQUIRE(values.size() == 3);
-    REQUIRE(values[0].first == 1.);
-    REQUIRE(values[1].first == 2.);
-    REQUIRE(values[2].first == 5.);
-    REQUIRE(values[0].second == 1);
-    REQUIRE(values[1].second == 2);
-    REQUIRE(values[2].second == 3);
+    CHECK(histogram.sum() == 13);
+    CHECK(histogram.count() == 4);
+    CHECK(values.size() == 3);
+    CHECK(values[0].first == 1.);
+    CHECK(values[1].first == 2.);
+    CHECK(values[2].first == 5.);
+    CHECK(values[0].second == 1);
+    CHECK(values[1].second == 2);
+    CHECK(values[2].second == 3);
 }
 
 TEST_CASE("Metric.Summary", "[metric][summary]")
@@ -111,15 +111,15 @@ TEST_CASE("Metric.Summary", "[metric][summary]")
 
     auto values = summary.values();
 
-    REQUIRE(summary.sum() == 11);
-    REQUIRE(summary.count() == 4);
-    REQUIRE(values.size() == 3);
-    REQUIRE(values[0].first == .5);
-    REQUIRE(values[1].first == .9);
-    REQUIRE(values[2].first == .99);
-    REQUIRE(values[0].second == 2);
-    REQUIRE(values[1].second == 3);
-    REQUIRE(values[2].second == 3);
+    CHECK(summary.sum() == 11);
+    CHECK(summary.count() == 4);
+    CHECK(values.size() == 3);
+    CHECK(values[0].first == .5);
+    CHECK(values[1].first == .9);
+    CHECK(values[2].first == .99);
+    CHECK(values[0].second == 2);
+    CHECK(values[1].second == 3);
+    CHECK(values[2].second == 3);
 }
 
 std::shared_ptr<IRegistry> createReferenceRegistry()
@@ -157,10 +157,10 @@ TEST_CASE("Registry.Registry", "[registry]")
 
     auto names = registry->metricNames();
 
-    REQUIRE(contains(names, "counter1"));
-    REQUIRE(contains(names, "counter2"));
-    REQUIRE(contains(names, "gauge1"));
-    REQUIRE(contains(names, "gauge2"));
+    CHECK(contains(names, "counter1"));
+    CHECK(contains(names, "counter2"));
+    CHECK(contains(names, "gauge1"));
+    CHECK(contains(names, "gauge2"));
 };
 
 TEST_CASE("Serialize.Prometheus", "[prometheus]")
@@ -168,7 +168,7 @@ TEST_CASE("Serialize.Prometheus", "[prometheus]")
     auto registry = createReferenceRegistry();
     auto result = Metrics::Prometheus::serialize(registry);
 
-    REQUIRE_THAT(result, Equals(R"(# HELP counter1 Description of counter 1
+    CHECK_THAT(result, Equals(R"(# HELP counter1 Description of counter 1
 # TYPE counter1 counter
 counter1 1
 # TYPE counter2 counter
@@ -212,7 +212,7 @@ TEST_CASE("Serialize.Json", "[json]")
     auto registry = createReferenceRegistry();
     auto result = Metrics::Json::serializeJson(registry);
 
-    REQUIRE_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1},{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
+    CHECK_THAT(result, Equals(R"([{"name":"counter1","type":"counter","value":1},{"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1},{"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2},{"name":"gauge1","type":"gauge","value":100.0},{"labels":{"another":"label"},"name":"gauge2","type":"gauge","value":200.0},{"buckets":[{"bound":1.0,"count":1},{"bound":2.0,"count":2},{"bound":5.0,"count":2}],"count":2,"name":"histogram1","sum":3.0,"type":"histogram"},{"buckets":[{"bound":1.0,"count":0},{"bound":2.0,"count":0},{"bound":5.0,"count":2}],"count":2,"labels":{"more":"labels"},"name":"histogram2","sum":7.0,"type":"histogram"},{"count":3,"name":"summary1","quantiles":[{"count":1,"quantile":0.5},{"count":2,"quantile":0.9},{"count":2,"quantile":0.99},{"count":2,"quantile":0.999}],"sum":6.0,"type":"summary"},{"count":3,"labels":{"summary":"label"},"name":"summary2","quantiles":[{"count":3,"quantile":0.5},{"count":3,"quantile":0.9},{"count":3,"quantile":0.99},{"count":3,"quantile":0.999}],"sum":11.0,"type":"summary"}])"));
 }
 
 TEST_CASE("Serialize.Jsonl", "[jsonl]")
@@ -220,7 +220,7 @@ TEST_CASE("Serialize.Jsonl", "[jsonl]")
     auto registry = createReferenceRegistry();
     auto result = Metrics::Json::serializeJsonl(registry);
 
-    REQUIRE_THAT(result, Equals(R"({"name":"counter1","type":"counter","value":1}
+    CHECK_THAT(result, Equals(R"({"name":"counter1","type":"counter","value":1}
 {"labels":{"label":"value1"},"name":"counter2","type":"counter","value":1}
 {"labels":{"label":"value2"},"name":"counter2","type":"counter","value":2}
 {"name":"gauge1","type":"gauge","value":100.0}
@@ -237,7 +237,7 @@ TEST_CASE("Serialize.Statsd", "[statsd]")
     auto registry = createReferenceRegistry();
     auto result = Metrics::Statsd::serialize(registry);
 
-    REQUIRE_THAT(result, Equals(R"(counter1|1|c
+    CHECK_THAT(result, Equals(R"(counter1|1|c
 counter2,label=value1|1|c
 counter2,label=value2|2|c
 gauge1|100|g
@@ -252,7 +252,7 @@ TEST_CASE("Timer.Counter", "[timer][counter]")
         Timer<milliseconds> t(c);
         sleep_for(2ms);
     }
-    REQUIRE(c.value() > 1);
+    CHECK(c.value() > 1);
 }
 
 TEST_CASE("Timer.Gauge", "[timer][gauge]")
@@ -262,7 +262,7 @@ TEST_CASE("Timer.Gauge", "[timer][gauge]")
         Timer<milliseconds> t(g);
         sleep_for(2ms);
     }
-    REQUIRE(g.value() > 1);
+    CHECK(g.value() > 1);
 }
 
 TEST_CASE("Timer.Histogram", "[timer][histogram]")
@@ -272,11 +272,11 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
         Timer<milliseconds> t(h);
         sleep_for(2ms);
     }
-    REQUIRE(h.sum() > 1);
-    REQUIRE(h.count() == 1);
+    CHECK(h.sum() > 1);
+    CHECK(h.count() == 1);
     auto values = h.values();
-    REQUIRE(values[0].second == 0);
-    REQUIRE(values[1].second == 1);
+    CHECK(values[0].second == 0);
+    CHECK(values[1].second == 1);
 }
 
 TEST_CASE("Timer.Summary", "[timer][summary]")
@@ -286,10 +286,31 @@ TEST_CASE("Timer.Summary", "[timer][summary]")
         Timer<milliseconds> t(s);
         sleep_for(2ms);
     }
-    REQUIRE(s.sum() > 1);
-    REQUIRE(s.count() == 1);
+    CHECK(s.sum() > 1);
+    CHECK(s.count() == 1);
     auto values = s.values();
-    REQUIRE(values[0].second > 1);
-    REQUIRE(values[1].second > 1);
-    REQUIRE(values[2].second > 1);
+    CHECK(values[0].second > 1);
+    CHECK(values[1].second > 1);
+    CHECK(values[2].second > 1);
+}
+
+TEST_CASE("Sink.URL", "[url][sink]")
+{
+    vector<string> urls = {
+        "statsd+tcp://localhost:1234/",
+
+        "statsd+udp://localhost:1234/",
+
+        "pushgateway+http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
+        "pushgateway+https://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
+
+        // "prometheus+https://localhost:8888",
+    };
+
+    for (const auto& url : urls) {
+        DYNAMIC_SECTION("url=" << url) {
+            auto sink = createOnDemandSink(url);
+            CHECK(sink != nullptr);
+        }
+    }
 }
