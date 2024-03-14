@@ -397,7 +397,7 @@ namespace {
         std::vector<std::string> elems;
         std::stringstream si(s);
 
-        while (!std::getline(si, elem, '/').eof()) {
+        while (std::getline(si, elem, '/')) {
             if (elem == "" || elem == ".")
                 continue;
             if (elem == "..") {
@@ -752,7 +752,7 @@ void Url::parse_url() const {
                     throw Url::parse_error("Missing ] in '" + std::string(s, e - s) + "'");
                 // decode IPvFuture protocol version
                 if (*b == 'v') {
-                    if (is_hexdigit(*++b)) {
+                    if (is_hexdigit(*++b) && ip_v >= 0) {
                         ip_v = get_hex_digit(*b);
                         if (is_hexdigit(*++b)) {
                             ip_v = (ip_v << 8) | get_hex_digit(*b);
