@@ -294,7 +294,7 @@ TEST_CASE("Timer.Summary", "[timer][summary]")
     CHECK(values[2].second > 1);
 }
 
-TEST_CASE("Sink.URL", "[url][sink]")
+TEST_CASE("Sink.OnDemand", "[url][sink]")
 {
     vector<string> urls = {
         "statsd+tcp://localhost:1234/",
@@ -303,13 +303,25 @@ TEST_CASE("Sink.URL", "[url][sink]")
 
         "pushgateway+http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
         "pushgateway+https://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance",
-
-        "prometheus+http://0.0.0.0:8888",
     };
 
     for (const auto& url : urls) {
         DYNAMIC_SECTION("url=" << url) {
             auto sink = createOnDemandSink(url);
+            CHECK(sink != nullptr);
+        }
+    }
+}
+
+TEST_CASE("Sink.Registry", "[url][sink]")
+{
+    vector<string> urls = {
+        "prometheus+http://127.0.0.1:8080",
+    };
+
+    for (const auto& url : urls) {
+        DYNAMIC_SECTION("url=" << url) {
+            auto sink = createRegistrySink(nullptr, url);
             CHECK(sink != nullptr);
         }
     }
