@@ -1,21 +1,19 @@
 #include <metrics/json.h>
 
-#pragma warning(push, 1)
-#include <nlohmann/json.hpp>
-#pragma warning(pop)
+#include <boost/json.hpp>
 
 #include <sstream>
 
-using json = nlohmann::json;
+namespace json = boost::json;
 using namespace std;
 
 namespace Metrics {
     namespace Json {
-        json serialize(const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
+        json::object serialize(const string & name, const Labels & labels, const std::shared_ptr<IMetric> metric)
         {
-            json serialized;
+            json::object serialized;
             serialized["name"] = name;
-            json jlabels;
+            json::object jlabels;
             for (auto kv = labels.cbegin(); kv != labels.cend(); kv++)
             {
                 jlabels[kv->first] = kv->second;
@@ -41,10 +39,10 @@ namespace Metrics {
                     serialized["count"] = s->count();
                     serialized["sum"] = s->sum();
 
-                    json quantiles = json::array();
+                    json::array quantiles;
                     for (const auto& kv : s->values())
                     {
-                        json v;
+                        json::object v;
                         v["quantile"] = kv.first;
                         v["count"] = kv.second;
                         quantiles.emplace_back(v);
@@ -60,10 +58,10 @@ namespace Metrics {
                     serialized["count"] = s->count();
                     serialized["sum"] = s->sum();
 
-                    json buckets;
+                    json::array buckets;
                     for (const auto& kv : s->values())
                     {
-                        json v;
+                        json::object v;
                         v["bound"] = kv.first;
                         v["count"] = kv.second;
                         buckets.emplace_back(v);
@@ -78,7 +76,7 @@ namespace Metrics {
 
         METRICS_EXPORT std::string serializeJson(std::shared_ptr<IRegistry> registry)
         {
-            auto result = json::array();
+            json::array result;
 
             auto names = registry->metricNames();
             for (const auto& name : names)

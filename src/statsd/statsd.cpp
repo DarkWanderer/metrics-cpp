@@ -2,7 +2,7 @@
 #include <metrics/sink.h>
 
 #pragma warning(push, 1)
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #pragma warning(pop)
 
 #include <iostream>
@@ -10,6 +10,7 @@
 #include <functional>
 
 using namespace std;
+namespace asio = boost::asio;
 using asio::ip::udp;
 using asio::ip::tcp;
 
