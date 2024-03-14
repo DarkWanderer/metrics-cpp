@@ -13,6 +13,7 @@ FetchContent_Declare(
     nlohmann-json
     GIT_REPOSITORY https://github.com/nlohmann/json/
     GIT_TAG        v3.11.2
+    GIT_SHALLOW     TRUE
 )
 FetchContent_MakeAvailable(nlohmann-json)
 
@@ -21,31 +22,26 @@ FetchContent_Declare(
     quantiles
     GIT_REPOSITORY  https://github.com/Liam0205/stream-quantiles
     GIT_TAG         fe65a645e85d4f6f112dd232e527d52524024548
+    GIT_SHALLOW     TRUE
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
 )
 
-FetchContent_GetProperties(quantiles)
-if(NOT quantiles_POPULATED)
-  FetchContent_Populate(quantiles)
-endif()
+FetchContent_MakeAvailable(quantiles)
 
 add_library(quantiles INTERFACE)
 target_include_directories(quantiles INTERFACE ${quantiles_SOURCE_DIR})
 
-# asio
+# Boost
+set(BOOST_INCLUDE_LIBRARIES asio)
+set(BOOST_ENABLE_CMAKE ON)
+message(STATUS "Downloading and extracting boost library sources. This will take some time...")
+set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
 FetchContent_Declare(
-    asio
-    GIT_REPOSITORY  https://github.com/chriskohlhoff/asio
-    GIT_TAG         asio-1-28-1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
+    Boost
+    URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.7z # downloading a zip release speeds up the download
+    USES_TERMINAL_DOWNLOAD TRUE
+    GIT_PROGRESS TRUE
+    DOWNLOAD_NO_EXTRACT FALSE
 )
-
-FetchContent_GetProperties(asio)
-if(NOT asio_POPULATED)
-  FetchContent_Populate(asio)
-endif()
-
-add_library(asio INTERFACE)
-target_include_directories(asio INTERFACE ${asio_SOURCE_DIR}/asio/include)
+FetchContent_MakeAvailable(Boost)

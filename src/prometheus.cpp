@@ -2,13 +2,14 @@
 #include <metrics/sink.h>
 
 #pragma warning(push, 1)
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #pragma warning(pop)
 
 #include <iostream>
 #include <sstream>
 
 using namespace std;
+namespace asio = boost::asio;
 using asio::ip::tcp;
 
 namespace Metrics {
