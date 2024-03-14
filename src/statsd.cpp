@@ -68,19 +68,16 @@ namespace Metrics {
         class StatsdOnDemandUdpSink : public IOnDemandSink {
         private:
             asio::io_service m_io_service;
-            udp::socket m_socket;
             string m_host;
             uint16_t m_port;
             const size_t m_max_packet_size;
         public:
             StatsdOnDemandUdpSink(string host, uint16_t port) :
                 m_io_service(),
-                m_socket(m_io_service),
                 m_host(host),
                 m_port(port),
                 m_max_packet_size(1000)
             {
-                m_socket.open(udp::v4());
             }
 
             void send(shared_ptr<IRegistry> registry) override
@@ -92,7 +89,9 @@ namespace Metrics {
                 auto endpoint = udp::endpoint(*endpoint_iterator); // Result guaranteed to be valid
 
                 auto send = [&](const char* begin, size_t count) {
-                    m_socket.send_to(asio::buffer(begin, count), endpoint);
+                    udp::socket socket(m_io_service);
+                    socket.open(endpoint.protocol());
+                    socket.send_to(asio::buffer(begin, count), endpoint);
                 };
 
                 // Serialize input into string
