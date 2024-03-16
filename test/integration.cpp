@@ -31,9 +31,12 @@ int main(int argc, char* argv[]) {
 
         auto url = argv[1];
         auto registry = createTestRegistry();
-        auto sink = createOnDemandSink(url);
-        if (sink)
-            sink->send(registry);
+        if (auto onDemandSink = createOnDemandSink(url))
+            onDemandSink->send(registry);
+        else if (auto registrySink = createRegistrySink(registry, url)) 
+        {
+            cin.get();
+        }
         else
             throw logic_error("Could not create sink for url");
     }

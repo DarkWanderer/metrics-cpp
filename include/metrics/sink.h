@@ -31,5 +31,5 @@ namespace Metrics {
     ///  statsd+udp://localhost:1234 
     ///  statsd+tcp://localhost:1234 
     ///  pushgateway+https://prometheus.push.gateway/job/123/instance/123
-    METRICS_EXPORT std::shared_ptr<IRegistrySink> createIRegistrySink(const std::string& url);
+    METRICS_EXPORT std::shared_ptr<IRegistrySink> createRegistrySink(std::shared_ptr<IRegistry> registry, const std::string& url_string);
 }
