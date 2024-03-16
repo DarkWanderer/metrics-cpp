@@ -64,8 +64,7 @@ namespace Metrics {
                 socket_.get_executor(), std::chrono::seconds(60) };
 
             // Asynchronously receive a complete request message.
-            void
-                read_request()
+            void read_request()
             {
                 auto self = shared_from_this();
 
@@ -91,14 +90,14 @@ namespace Metrics {
                 switch (request_.method()) {
                 case http::verb::get:
                     response_.result(http::status::ok);
-                    response_.set(http::field::server, "Beast");
+                    response_.set(http::field::server, "Boost::Beast");
                     create_response();
                     break;
 
                 default:
                     // We return responses indicating an error if
                     // we do not recognize the request method.
-                    response_.result(http::status::bad_request);
+                    response_.result(http::status::method_not_allowed);
                     response_.set(http::field::content_type, "text/plain");
                     beast::ostream(response_.body())
                         << "Invalid request-method '"
@@ -114,7 +113,7 @@ namespace Metrics {
             void create_response()
             {
                 if (request_.target() == "/metrics") {
-                    response_.set(http::field::content_type, "text/html");
+                    response_.set(http::field::content_type, "text/plain");
                     beast::ostream(response_.body()) << serialize(context_.registry);
                 }
                 else {
@@ -172,6 +171,7 @@ namespace Metrics {
             thread m_thread;
 
             void run() {
+                // TODO: resolve in constructor to make sure this doesn't throw exception in background
                 tcp::resolver resolver(m_io_context);
                 tcp::resolver::query query(m_address, m_port);
                 auto endpoint_iterator = resolver.resolve(query);
