@@ -15,7 +15,7 @@ namespace Metrics {
         auto ru = boost::urls::parse_uri_reference(url_string);
         if (!ru)
             return nullptr;
-        auto url = *ru;
+        const auto& url = *ru;
 
         try 
         {
@@ -40,9 +40,10 @@ namespace Metrics {
         auto ru = boost::urls::parse_uri_reference(url_string);
         if (!ru)
             return nullptr;
-        auto url = *ru;
+        const auto& url = *ru;
         try 
         {
+            const auto& scheme = url.scheme();
         }
         catch (std::exception&) 
         {
