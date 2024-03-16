@@ -25,7 +25,6 @@ The design goals of this library are the following:
   * JSON/JSONL
   * statsd
 * Cross-platform (built for Windows, Ubuntu, MacOS)
-* Planned: HTTP/UDP sinks
 
 ## Limitations & compromises
 
@@ -39,8 +38,9 @@ Due to limited number of locks employed, there is no strong consistency guarante
 |Serialization: JSON|![icon](https://img.shields.io/badge/GA-green)|
 |Serialization: Prometheus|![icon](https://img.shields.io/badge/GA-green)|
 |Sink: Statsd UDP|![icon](https://img.shields.io/badge/beta-yellow)|
-|Sink: Statsd TCP|![icon](https://img.shields.io/badge/alpha-red)|
+|Sink: Statsd TCP|![icon](https://img.shields.io/badge/beta-yellow)|
 |Sink: PushGateway|![icon](https://img.shields.io/badge/alpha-red)|
+|Sink: Prometheus HTTP|![icon](https://img.shields.io/badge/beta-yellow)|
 
 ## Usage examples
 
@@ -130,8 +130,7 @@ if (sink)
 
 This project utilizes following 3rd-party libraries and tools
 
-* [asio](https://github.com/chriskohlhoff/asio) - asynchronous socket wrapper library
+* [boost](https://github.com/boostorg/boost/)
 * [Catch2](https://github.com/catchorg/Catch2) - C++ testing framework
-* [nlohmann-json](https://github.com/nlohmann/json/) - fast C++ JSON library
 * [stream-quantiles](https://github.com/Liam0205/stream-quantiles) - C++ CKMS algorithm implementation
 * [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code
