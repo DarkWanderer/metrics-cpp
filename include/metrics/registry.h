@@ -30,28 +30,28 @@ namespace Metrics
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Gauge getGauge(const std::string name, const Labels& labels = {}) = 0;
+        virtual Gauge getGauge(const std::string& name, const Labels& labels = {}) = 0;
 
         /// <summary>
         /// Get or create a counter with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Counter getCounter(const std::string name, const Labels& labels = {}) = 0;
+        virtual Counter getCounter(const std::string& name, const Labels& labels = {}) = 0;
 
         /// <summary>
         /// Get or create a summary with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Summary getSummary(const std::string name, const Labels& labels = {}, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.999 }, double error = 0.01) = 0;
+        virtual Summary getSummary(const std::string& name, const Labels& labels = {}, const std::vector<double>& quantiles = { 0.50, 0.90, 0.99, 0.999 }, double error = 0.01) = 0;
 
         /// <summary>
         /// Get or create a histogram with provided key
         /// </summary>
         /// <param name="key">metric key</param>
         /// <returns>new or existing metric object</returns>
-        virtual Histogram getHistogram(const std::string name, const Labels& labels = {}, const std::vector<double>& bounds = { 100., 200., 300., 400., 500. }) = 0;
+        virtual Histogram getHistogram(const std::string& name, const Labels& labels = {}, const std::vector<double>& bounds = { 100., 200., 300., 400., 500. }) = 0;
 
         /// <summary>
         /// Register an existing metric wrapper object with the registry
@@ -60,7 +60,7 @@ namespace Metrics
         /// <param name="key"></param>
         /// <param name="metric"></param>
         /// <returns></returns>
-        template<class TMetric> bool add(TMetric metric, const std::string name, const Labels& labels = {}) { return add(metric.raw(), name, labels); }
+        template<class TMetric> bool add(TMetric metric, const std::string& name, const Labels& labels = {}) { return add(metric.raw(), name, labels); }
 
         /// <summary>
         /// Register an existing low-level metric object with the registry
@@ -69,9 +69,14 @@ namespace Metrics
         /// <param name="key"></param>
         /// <param name="metric"></param>
         /// <returns></returns>
-        virtual bool add(std::shared_ptr<IMetric> metric, const std::string name, const Labels& labels = {}) = 0;
+        virtual bool add(std::shared_ptr<IMetric> metric, const std::string& name, const Labels& labels = {}) = 0;
 
-        virtual void setDescription(std::string name, std::string description) = 0;
+        /// <summary>
+        /// Sets metric description to later send to sinks
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        virtual void setDescription(const std::string& name, const std::string& description) = 0;
 
         virtual ~IRegistry() = 0;
     };
