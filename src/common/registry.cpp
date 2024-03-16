@@ -15,7 +15,7 @@ namespace Metrics {
     struct MetricKeyHasher
     {
         // Hash
-        uint64_t operator()(const std::string name, const Labels& labels) const
+        uint64_t operator()(const std::string& name, const Labels& labels) const
         {
             hash<string> h;
             // computes the hash of an employee using a variant
@@ -51,7 +51,7 @@ namespace Metrics {
             return m_description;
         }
 
-        void setDescription(string description) {
+        void setDescription(const string& description) {
             unique_lock<mutex> lock(m_mutex);
             m_description = description;
         }
@@ -135,27 +135,27 @@ namespace Metrics {
             return it->second;
         }
 
-        Gauge getGauge(const std::string name, const Labels& labels) override {
+        Gauge getGauge(const std::string& name, const Labels& labels) override {
             auto& group = getOrCreateGroup(name, TypeCode::Gauge);
             return group.get<Gauge>(labels, makeGauge);
         };
 
-        Counter getCounter(const std::string name, const Labels& labels) override {
+        Counter getCounter(const std::string& name, const Labels& labels) override {
             auto& group = getOrCreateGroup(name, TypeCode::Counter);
             return group.get<Counter>(labels, makeCounter);
         };
 
-        Summary getSummary(const std::string name, const Labels& labels, const vector<double>& quantiles, double error) override {
+        Summary getSummary(const std::string& name, const Labels& labels, const vector<double>& quantiles, double error) override {
             auto& group = getOrCreateGroup(name, TypeCode::Summary);
             return group.get<Summary>(labels, bind(makeSummary, quantiles, error));
         }
 
-        Histogram getHistogram(const std::string name, const Labels& labels, const vector<double>& bounds) override {
+        Histogram getHistogram(const std::string& name, const Labels& labels, const vector<double>& bounds) override {
             auto& group = getOrCreateGroup(name, TypeCode::Histogram);
             return group.get<Histogram>(labels, bind(makeHistogram, bounds));
         }
 
-        virtual bool add(shared_ptr<IMetric> metric, const std::string name, const Labels& labels) override
+        virtual bool add(shared_ptr<IMetric> metric, const std::string& name, const Labels& labels) override
         {
             auto& group = getOrCreateGroup(name, metric->type());
             return group.add(labels, metric);
@@ -172,7 +172,7 @@ namespace Metrics {
             return result;
         }
 
-        virtual void setDescription(std::string name, std::string description) override
+        virtual void setDescription(const std::string& name, const std::string& description) override
         {
             unique_lock<mutex> lock(m_mutex);
             auto it = m_groups.find(name);
