@@ -1,7 +1,7 @@
 # metrics-cpp
 
 [![Build](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml/badge.svg)](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml)
-![Readiness](https://img.shields.io/badge/readiness-alpha-red)
+![Readiness](https://img.shields.io/badge/readiness-beta-yellow)
 
 A low-footprint, high-performance C++ metrics library implementing commonly used metric classes - Counter, Gauge, Histogram, Summary - in idiomatic and thread-safe faction
 
