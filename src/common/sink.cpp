@@ -43,13 +43,12 @@ namespace Metrics {
         try 
         {
             const auto& scheme = url.scheme();
+            if (scheme == "prometheus+http")
+                return Prometheus::createPrometheusHttpServerSink(registry, url.host(), url.port());
         }
         catch (std::exception&) 
         {
         }
-
-        if (scheme == "prometheus+http")
-            return Prometheus::createPrometheusHttpServerSink(registry, url.host(), url.port());
 
         return std::shared_ptr<IRegistrySink>();
     }
