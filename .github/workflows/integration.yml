@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: cmake --preset linux-x64-debug
-    - run: cmake --build --preset linux-x64-debug --target integration
-    - run: out/build/linux-x64-debug/integration statsd+tcp://localhost:9125
-    - run: out/build/linux-x64-debug/integration statsd+udp://localhost:9125
-    - run: out/build/linux-x64-debug/integration pushgateway+http://localhost:9091/metrics/job/test_job/instance/test_instance
+    - run: cmake --build --preset linux-x64-debug --target integration-test
+    - run: out/build/linux-x64-debug/integration-test statsd+tcp://localhost:9125
+    - run: out/build/linux-x64-debug/integration-test statsd+udp://localhost:9125
+    - run: out/build/linux-x64-debug/integration-test pushgateway+http://localhost:9091/metrics/job/test_job/instance/test_instance
