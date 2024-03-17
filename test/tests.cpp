@@ -7,6 +7,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <map>
 #include <thread>
@@ -103,23 +104,26 @@ TEST_CASE("Metric.Histogram", "[metric][histogram]")
 
 TEST_CASE("Metric.Summary", "[metric][summary]")
 {
-    Summary summary({ .5, .9, .99 });
+    const vector<double> expected_quantiles = { .5, .75, .99 };
+    const vector<uint64_t> expected_values = { 2,3,5 };
+
+    Summary summary(expected_quantiles);
+    summary.observe(1);
     summary.observe(1);
     summary.observe(2);
     summary.observe(3);
     summary.observe(5);
 
-    auto values = summary.values();
+    vector<double> actual_quantiles;
+    vector<uint64_t> actual_values;
 
-    CHECK(summary.sum() == 11);
-    CHECK(summary.count() == 4);
-    CHECK(values.size() == 3);
-    CHECK(values[0].first == .5);
-    CHECK(values[1].first == .9);
-    CHECK(values[2].first == .99);
-    CHECK(values[0].second == 2);
-    CHECK(values[1].second == 3);
-    CHECK(values[2].second == 3);
+    for (auto v : summary.values()) {
+        actual_quantiles.push_back(v.first);
+        actual_values.push_back(v.second);
+    };
+
+    CHECK(actual_quantiles == expected_quantiles);
+    CHECK(actual_values == expected_values);
 }
 
 std::shared_ptr<IRegistry> createReferenceRegistry()

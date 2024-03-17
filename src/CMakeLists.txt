@@ -10,6 +10,6 @@ file(GLOB_RECURSE METRICS_SOURCE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE
 
 add_library(metrics SHARED ${METRICS_SOURCE_FILES})
 target_include_directories(metrics PUBLIC "${PROJECT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}")
-target_link_libraries(metrics PRIVATE quantiles Boost::asio Boost::beast Boost::json Boost::url)
+target_link_libraries(metrics PRIVATE Boost::asio Boost::accumulators Boost::beast Boost::json Boost::url)
 generate_export_header(metrics)
 add_library(METRICS::lib ALIAS metrics)

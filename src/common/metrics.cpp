@@ -1,6 +1,9 @@
 #include <metrics/metric.h>
 
-#include <stream-quantiles/ckms.h>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/sum.hpp>
+#include <boost/accumulators/statistics/count.hpp>
+#include <boost/accumulators/statistics/extended_p_square_quantile.hpp>
 
 #include <algorithm>
 #include <mutex>
@@ -101,45 +104,6 @@ namespace Metrics
 		};
 	};
 
-	// Implements CKMS algorithm for approximate quantile calculation
-	// Utilizes locking internally. Using Histogram is recommended instead
-	class SummaryImpl : public ISummary {
-	private:
-        const vector<double> m_quantiles;
-		CounterImpl m_count;
-		GaugeImpl m_sum;
-        mutable mutex m_mutex;
-        yuuki::ckms::high_biased<double> m_accumulator;
-
-	public:
-        SummaryImpl(const vector<double>& quantiles, double error) : m_quantiles(quantiles), m_accumulator(error)
-		{
-		}
-
-		SummaryImpl(const SummaryImpl&) = delete;
-
-		ISummary& observe(double value) override {
-            m_count++;
-            m_sum += value;
-            unique_lock<mutex> lock(m_mutex);
-            m_accumulator.insert(value);
-			return *this;
-		}
-
-		vector<pair<double, uint64_t>> values() const override
-		{
-            unique_lock<mutex> lock(m_mutex);
-			vector<pair<double, uint64_t>> result;
-            for (auto q : m_quantiles)
-            {
-                result.emplace_back(q, m_accumulator.quantile(q));
-            }
-			return result;
-		};
-
-		uint64_t count() const override { return m_count; };
-		double sum() const override { return m_sum; };
-	};
 
 	class HistogramImpl : public IHistogram {
 	private:
@@ -193,6 +157,5 @@ namespace Metrics
 	// Definitions for functions referenced in registry.cpp
 	std::shared_ptr<ICounterValue> makeCounter() { return std::make_shared<CounterImpl>(); };
 	std::shared_ptr<IGaugeValue> makeGauge() { return std::make_shared<GaugeImpl>(); };
-	std::shared_ptr<ISummary> makeSummary(const vector<double>& quantiles, double error) { return std::make_shared<SummaryImpl>(quantiles, error); };
 	std::shared_ptr<IHistogram> makeHistogram(const vector<double>& bounds) { return std::make_shared<HistogramImpl>(bounds); };
 }
