@@ -6,11 +6,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests tests.cpp)
+file(GLOB TESTS_SOURCE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_executable(tests ${TESTS_SOURCE_FILES})
 target_link_libraries(tests PUBLIC METRICS::lib PRIVATE Catch2::Catch2WithMain)
-
-add_executable(integration integration.cpp)
-target_link_libraries(integration PUBLIC METRICS::lib)
 
 include(Catch)
 catch_discover_tests(tests)
