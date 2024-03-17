@@ -1,10 +1,5 @@
 #include <metrics/metric.h>
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/sum.hpp>
-#include <boost/accumulators/statistics/count.hpp>
-#include <boost/accumulators/statistics/extended_p_square_quantile.hpp>
-
 #include <algorithm>
 #include <mutex>
 #include <atomic>
