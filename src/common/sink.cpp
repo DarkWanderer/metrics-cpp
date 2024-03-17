@@ -4,8 +4,6 @@
 
 #include <boost/url/parse.hpp>
 
-using boost::urls::parse_absolute_uri;
-
 namespace Metrics {
     IOnDemandSink::~IOnDemandSink() {}
     IRegistrySink::~IRegistrySink() {}
