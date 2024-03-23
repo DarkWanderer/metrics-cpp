@@ -32,7 +32,7 @@ namespace Metrics {
         {
         public:
             HttpConnection(tcp::socket socket, Context context)
-                : socket_(std::move(socket)), context_(context)
+                : context_(context), socket_(std::move(socket))
             {
             }
 
