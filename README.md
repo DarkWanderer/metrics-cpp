@@ -112,7 +112,9 @@ for (auto file: files)
 }
 ```
 
-### Sink URL
+### Sinks
+
+Sinks can be created explicitly by type or from a URL. In latter case, specific sink type is derived from URL schema, e.g. `statsd+udp` or `pushgateway+http`
 
 ```cpp
 // Set this value in config
