@@ -9,7 +9,7 @@ A low-footprint, high-performance C++ metrics library implementing commonly used
 
 The design goals of this library are the following:
 
-* Be as lightweight as possible - all operations on Counter, Gauge, Histogram are lock-free using atomic operations
+* Be as lightweight as possible - all operations on Counter, Gauge are lock-free using atomic operations
 * Allow to think of instrumenting first and exposition later
 * Provide easy to use API
 
@@ -17,7 +17,7 @@ The design goals of this library are the following:
 
 * Provides commonly used metric classes
 * A number of out-the-box optimizations
-  * all metrics except Summary are lock-free
+  * Gauge, Counter are lock-free
   * Labels are optimized for cache locality (vector instead of std::map; make sure to use a compiler which takes advantage of [SSO](https://pvs-studio.com/en/blog/terms/6658/))
   * Minimized locking for operations in Registry
 * Various methods of serialization
