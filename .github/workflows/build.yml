@@ -4,10 +4,16 @@ on:
   workflow_call:
     inputs:
       conf:
-        required: true
+        default: release
+        required: false
         type: string
       os:
-        required: true
+        default: ubuntu
+        required: false
+        type: string
+      arch:
+        default: x64
+        required: false
         type: string
       artifacts:
         default: false
