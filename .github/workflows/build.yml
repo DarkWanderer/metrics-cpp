@@ -54,7 +54,7 @@ jobs:
 
     - name: Install
       if: ${{ inputs.artifacts }}
-      run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix ${{ steps.preset.outputs.name }}
+      run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix out/install/${{ steps.preset.outputs.name }}
     
     - name: Tar
       if: ${{ inputs.artifacts }}
