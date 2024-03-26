@@ -47,7 +47,6 @@ function(enable_sanitizer SANITIZER)
     )
 
     add_custom_target(CopyAsanBinaries ALL DEPENDS ${ASAN_LIBRARY_NAME} ${LLVM_SYMBOLIZER_NAME})
-    add_compile_options(/fsanitize=${SANITIZER} /Zi /Oy-)
   else()
     message(FATAL_ERROR "MSVC does not support sanitizer ${SANITIZER}")
   endif()

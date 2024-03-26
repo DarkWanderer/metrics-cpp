@@ -12,6 +12,10 @@ endif()
 set(BOOST_INCLUDE_LIBRARIES asio accumulators beast json url)
 set(BOOST_USE_STATIC_LIBS ON)
 set(BOOST_ENABLE_CMAKE ON)
+if (METRICS_BUILD_SANITIZER)
+  set(BOOST_USE_ASAN ON)
+endif()
+
 message(STATUS "Downloading and extracting boost library sources. This will take some time...")
 set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
 FetchContent_Declare(
