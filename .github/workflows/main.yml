@@ -1,7 +1,7 @@
-name: "PR Checks"
+name: "Mainline Checks"
 
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
 
 jobs:
@@ -11,10 +11,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows, ubuntu, macos]
-        conf: [debug]
+        conf: [release, debug]
         arch: [x64]
+        exclude:
+        - os: ubuntu
+          arch: x86
+        - os: macos
+          arch: x86
     uses:  ./.github/workflows/build.yml
     with:
       conf: ${{ matrix.conf }}
       os: ${{ matrix.os }}
-      artifacts: false
+      artifacts: true
