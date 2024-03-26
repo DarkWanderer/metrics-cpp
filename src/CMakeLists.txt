@@ -15,6 +15,10 @@ target_link_libraries(metrics PRIVATE Boost::asio Boost::accumulators Boost::bea
 generate_export_header(metrics)
 add_library(METRICS::lib ALIAS metrics)
 
+if (METRICS_BUILD_SANITIZER)
+  add_compile_options(metrics PUBLIC /fsanitize=${METRICS_BUILD_SANITIZER} /Zi /Oy-)
+endif()
+
 # Data to properly create install package
 set_target_properties(metrics PROPERTIES PUBLIC_HEADER "${METRICS_HEADER_FILES}")
 install(TARGETS metrics PUBLIC_HEADER)
