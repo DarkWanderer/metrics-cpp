@@ -1,27 +1,25 @@
 name: Build  
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      conf:
+        default: release
+        required: false
+        type: string
+      os:
+        required: true
+        type: string
+      artifacts:
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   build:
     name: Build
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows, ubuntu, macos]
-        conf: [release, debug]
-        arch: [x64]
-        exclude:
-          - os: ubuntu
-            arch: x86
-          - os: macos
-            arch: x86
     
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ inputs.os }}-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -33,12 +31,12 @@ jobs:
       id: preset
       shell: bash
       run: |
-        echo "name=${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
+        echo "name=${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
 
     - name: Set up Windows compiler
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: ${{ matrix.arch }}
+        arch: ${{ inputs.arch }}
 
     - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}

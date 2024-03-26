@@ -1,0 +1,25 @@
+name: "PR Checks"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows, ubuntu, macos]
+        conf: [release, debug]
+        arch: [x64]
+        exclude:
+        - os: ubuntu
+          arch: x86
+        - os: macos
+          arch: x86
+    uses: ./build.yml
+    with:
+      conf: ${{ matrix.conf }}
+      os: ${{ matrix.os }}
+      artifacts: false
+    
