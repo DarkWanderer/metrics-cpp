@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    name: Build
     strategy:
       fail-fast: false
       matrix:
@@ -21,5 +22,5 @@ jobs:
     with:
       conf: ${{ matrix.conf }}
       os: ${{ matrix.os }}
-      artifacts: false
+      artifacts: true
     

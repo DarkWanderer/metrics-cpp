@@ -51,3 +51,19 @@ jobs:
 
     - name: Test
       run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
+
+    - name: Install
+      if: ${{ inputs.artifacts }}
+      run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix ${{ steps.preset.outputs.name }}
+    
+    - name: Tar
+      if: ${{ inputs.artifacts }}
+      working-directory: out/install/${{ steps.preset.outputs.name }}
+      run: tar -czf ${{ github.workspace }}/${{ steps.preset.outputs.name }}.tar.gz .
+      
+    - name: Upload artifact
+      if: ${{ inputs.artifacts }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.preset.outputs.name }}
+        path: ${{ steps.preset.outputs.name }}.tar.gz
