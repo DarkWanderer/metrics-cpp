@@ -13,7 +13,7 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install PVS-Studio
         run: |
           wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt | sudo apt-key add -
@@ -26,28 +26,29 @@ jobs:
 
       - name: Configure
         run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset linux-x64-debug
-        
+
       - name: Build
         run: cmake --build --preset linux-x64-debug --target metrics
-          
+
       - name: Analyze
         run: pvs-studio-analyzer analyze -f out/build/linux-x64-debug/compile_commands.json 
                                          -e out/build/linux-x64-debug/_deps/ -e test/ -j
+
       - name: Convert report
         run: plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
-          
+
       - uses: actions/upload-artifact@v4
         with:
           name: pvs-studio-log
           path: PVS-Studio.log
-          retention-days: 5
-      
+          retention-days: 1
+
       - uses: actions/upload-artifact@v4
         with:
           name: pvs-report-sarif
           path: pvs-report.sarif
-          retention-days: 5
-          
+          retention-days: 1
+
       - name: Publish report
         uses: github/codeql-action/upload-sarif@v3
         with:

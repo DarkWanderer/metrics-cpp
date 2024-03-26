@@ -1,27 +1,30 @@
 name: Build  
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      conf:
+        default: release
+        required: false
+        type: string
+      os:
+        default: ubuntu
+        required: false
+        type: string
+      arch:
+        default: x64
+        required: false
+        type: string
+      artifacts:
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   build:
     name: Build
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows, ubuntu, macos]
-        conf: [release, debug]
-        arch: [x64]
-        exclude:
-          - os: ubuntu
-            arch: x86
-          - os: macos
-            arch: x86
     
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ inputs.os }}-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -33,12 +36,12 @@ jobs:
       id: preset
       shell: bash
       run: |
-        echo "name=${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
+        echo "name=${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
 
     - name: Set up Windows compiler
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: ${{ matrix.arch }}
+        arch: ${{ inputs.arch }}
 
     - name: Configure
       run: cmake --preset ${{ steps.preset.outputs.name }}
@@ -48,3 +51,19 @@ jobs:
 
     - name: Test
       run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
+
+    - name: Install
+      if: ${{ inputs.artifacts }}
+      run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix out/install/${{ steps.preset.outputs.name }}
+    
+    - name: Tar
+      if: ${{ inputs.artifacts }}
+      working-directory: out/install/${{ steps.preset.outputs.name }}
+      run: tar -czf ${{ github.workspace }}/${{ steps.preset.outputs.name }}.tar.gz .
+      
+    - name: Upload artifact
+      if: ${{ inputs.artifacts }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.preset.outputs.name }}
+        path: ${{ steps.preset.outputs.name }}.tar.gz

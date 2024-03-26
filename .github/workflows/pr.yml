@@ -1,0 +1,20 @@
+name: "PR Checks"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows, ubuntu, macos]
+        conf: [debug]
+        arch: [x64]
+    uses:  ./.github/workflows/build.yml
+    with:
+      conf: ${{ matrix.conf }}
+      os: ${{ matrix.os }}
+      artifacts: false
