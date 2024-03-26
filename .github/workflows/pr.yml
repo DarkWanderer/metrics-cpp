@@ -17,7 +17,7 @@ jobs:
           arch: x86
         - os: macos
           arch: x86
-    uses: ./build.yml
+    uses:  ./.github/workflows/build.yml
     with:
       conf: ${{ matrix.conf }}
       os: ${{ matrix.os }}
