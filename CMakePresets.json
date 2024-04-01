@@ -22,7 +22,8 @@
       },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
