@@ -42,6 +42,22 @@ Due to limited number of locks employed, there is no strong consistency guarante
 |Sink: PushGateway|![icon](https://img.shields.io/badge/alpha-red)|
 |Sink: Prometheus HTTP|![icon](https://img.shields.io/badge/beta-yellow)|
 
+## Performance
+
+Basic benchmarks captured on AMD Ryzen 5900X
+
+```
+---------------------------------------------------------------
+Benchmark                     Time             CPU   Iterations
+---------------------------------------------------------------
+BM_CounterIncrement        1.29 ns         1.28 ns    560000000
+BM_GaugeSet                1.84 ns         1.84 ns    373333333
+BM_HistogramObserve        5.93 ns         6.00 ns    112000000
+BM_SummaryObserve          9.01 ns         8.79 ns     74666667
+BM_RegistryGet             45.5 ns         44.4 ns     17230769
+BM_RegistryGetLabels        134 ns          132 ns      4977778
+```
+
 ## Usage examples
 
 ### Quickstart
