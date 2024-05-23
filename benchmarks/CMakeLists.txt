@@ -9,5 +9,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googlebenchmark)
 
-add_executable(benchmarks benchmarks.cpp)
-target_link_libraries(benchmarks PUBLIC METRICS::lib benchmark::benchmark)
+add_executable(metrics_benchmark benchmarks.cpp)
+target_link_libraries(metrics_benchmark PUBLIC METRICS::lib benchmark::benchmark)
