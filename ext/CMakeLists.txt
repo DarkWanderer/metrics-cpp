@@ -17,7 +17,7 @@ if (METRICS_BUILD_SANITIZER)
 endif()
 
 message(STATUS "Downloading and extracting boost library sources. This will take some time...")
-set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
+set(FETCHCONTENT_QUIET FALSE) # To print downloading progress
 FetchContent_Declare(
     Boost
     URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.7z # downloading a zip release speeds up the download
