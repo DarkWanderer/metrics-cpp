@@ -1,7 +1,16 @@
 #include <benchmark/benchmark.h>
 #include <metrics/registry.h>
 
+#include <atomic>
+
 using namespace Metrics;
+
+static void BM_AtomicIncrement(benchmark::State& state) {
+    std::atomic<int> counter;
+    for (auto _ : state)
+        counter++;
+}
+BENCHMARK(BM_AtomicIncrement);
 
 static void BM_CounterIncrement(benchmark::State& state) {
     auto counter = Counter();

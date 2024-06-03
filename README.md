@@ -44,18 +44,25 @@ Due to limited number of locks employed, there is no strong consistency guarante
 
 ## Performance
 
-Basic benchmarks captured on AMD Ryzen 5900X
+Performance of metrics is comparable to `atomic` primitives - even with pointer indirection
 
 ```
+Run on (24 X 3700 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x12)
+  L1 Instruction 32 KiB (x12)
+  L2 Unified 512 KiB (x12)
+  L3 Unified 32768 KiB (x2)
 ---------------------------------------------------------------
 Benchmark                     Time             CPU   Iterations
 ---------------------------------------------------------------
-BM_CounterIncrement        1.29 ns         1.28 ns    560000000
-BM_GaugeSet                1.84 ns         1.84 ns    373333333
-BM_HistogramObserve        5.93 ns         6.00 ns    112000000
-BM_SummaryObserve          9.01 ns         8.79 ns     74666667
-BM_RegistryGet             45.5 ns         44.4 ns     17230769
-BM_RegistryGetLabels        134 ns          132 ns      4977778
+BM_AtomicIncrement         1.39 ns         1.40 ns    448000000
+BM_CounterIncrement        1.34 ns         1.32 ns    497777778
+BM_GaugeSet                1.95 ns         1.95 ns    344615385
+BM_HistogramObserve        6.05 ns         6.00 ns    112000000
+BM_SummaryObserve          9.19 ns         9.21 ns     74666667
+BM_RegistryGet             53.0 ns         53.7 ns     16592593
+BM_RegistryGetLabels        131 ns          134 ns      5600000
 ```
 
 ## Usage examples
