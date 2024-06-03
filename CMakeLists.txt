@@ -18,9 +18,16 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 add_subdirectory(ext)
 add_subdirectory(src)
 
-if (METRICS_BUILD_TESTS)
+if (METRICS_BUILD_TESTS OR METRICS_BUILD_BENCHMARKS)
     include(CTest)
     enable_testing()
+endif()
+
+if (METRICS_BUILD_TESTS)
     add_subdirectory(integration)
     add_subdirectory(test)
+endif()
+
+if (METRICS_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()

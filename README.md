@@ -42,6 +42,29 @@ Due to limited number of locks employed, there is no strong consistency guarante
 |Sink: PushGateway|![icon](https://img.shields.io/badge/alpha-red)|
 |Sink: Prometheus HTTP|![icon](https://img.shields.io/badge/beta-yellow)|
 
+## Performance
+
+Performance of metrics is comparable to `atomic` primitives - even with pointer indirection
+
+```
+Run on (24 X 3700 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x12)
+  L1 Instruction 32 KiB (x12)
+  L2 Unified 512 KiB (x12)
+  L3 Unified 32768 KiB (x2)
+---------------------------------------------------------------
+Benchmark                     Time             CPU   Iterations
+---------------------------------------------------------------
+BM_AtomicIncrement         1.39 ns         1.40 ns    448000000
+BM_CounterIncrement        1.34 ns         1.32 ns    497777778
+BM_GaugeSet                1.95 ns         1.95 ns    344615385
+BM_HistogramObserve        6.05 ns         6.00 ns    112000000
+BM_SummaryObserve          9.19 ns         9.21 ns     74666667
+BM_RegistryGet             53.0 ns         53.7 ns     16592593
+BM_RegistryGetLabels        131 ns          134 ns      5600000
+```
+
 ## Usage examples
 
 ### Quickstart
