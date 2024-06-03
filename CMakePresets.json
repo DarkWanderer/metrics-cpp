@@ -7,7 +7,8 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
-        "METRICS_BUILD_TESTS": true
+        "METRICS_BUILD_TESTS": true,
+        "METRICS_BUILD_BENCHMARKS": true
       }
     },
     {
