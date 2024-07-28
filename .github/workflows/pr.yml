@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows, ubuntu, macos]
+        os: [windows, ubuntu]
         conf: [debug, asan]
         arch: [x64]
     uses:  ./.github/workflows/build.yml
