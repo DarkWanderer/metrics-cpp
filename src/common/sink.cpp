@@ -22,8 +22,10 @@ namespace Metrics {
                 return Statsd::createUdpSink(url.host(), url.port());
             if (scheme == "statsd+tcp")
                 return Statsd::createTcpSink(url.host(), url.port());
-            if (scheme == "pushgateway+http" || scheme == "pushgateway+https")
-                return Prometheus::createPushGatewaySink(url.host(), url.port(), "job", "instance");
+            if (scheme.find("pushgateway+") == 0) {
+                std::string url_truncated = url_string.substr(strlen("pushgateway+"));
+                return Prometheus::createPushGatewaySink(url_truncated);
+            }
         }
         catch (std::exception&) 
         {
