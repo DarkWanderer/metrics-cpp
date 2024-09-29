@@ -1,32 +1,36 @@
-name: Integration  
+name: Integration
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     name: Integration test
-    
+
     runs-on: ubuntu-latest
 
     services:
       pushgateway:
         image: prom/pushgateway:latest
-        ports: 
+        ports:
           - "9091:9091"
       statsd:
         image: prom/statsd-exporter:latest
-        ports: 
+        ports:
           - "9125:9125/udp"
           - "9125:9125/tcp"
 
     steps:
-    - uses: actions/checkout@v4
-    - run: cmake --preset linux-x64-debug
-    - run: cmake --build --preset linux-x64-debug --target integration-test
-    - run: out/build/linux-x64-debug/integration-test statsd+tcp://localhost:9125
-    - run: out/build/linux-x64-debug/integration-test statsd+udp://localhost:9125
-    - run: out/build/linux-x64-debug/integration-test pushgateway+http://localhost:9091/metrics/job/test_job/instance/test_instance
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@latest
+      - uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: true
+      - run: cmake --preset linux-x64-debug
+      - run: cmake --build --preset linux-x64-debug --target integration-test
+      - run: out/build/linux-x64-debug/integration-test statsd+tcp://localhost:9125
+      - run: out/build/linux-x64-debug/integration-test statsd+udp://localhost:9125
+      - run: out/build/linux-x64-debug/integration-test pushgateway+http://localhost:9091/metrics/job/test_job/instance/test_instance

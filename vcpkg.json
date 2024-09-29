@@ -1,0 +1,13 @@
+{
+    "dependencies": [
+        "benchmark",
+        "boost-accumulators",
+        "boost-asio",
+        "boost-beast",
+        "boost-json",
+        "boost-url",
+        "catch2",
+        "curl",
+        "openssl"
+    ]
+}
