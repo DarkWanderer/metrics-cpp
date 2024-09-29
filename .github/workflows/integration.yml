@@ -25,6 +25,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@latest
+      - uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: true
       - run: cmake --preset linux-x64-debug
       - run: cmake --build --preset linux-x64-debug --target integration-test
       - run: out/build/linux-x64-debug/integration-test statsd+tcp://localhost:9125
