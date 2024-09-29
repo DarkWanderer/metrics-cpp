@@ -8,7 +8,8 @@
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
         "METRICS_BUILD_TESTS": true,
-        "METRICS_BUILD_BENCHMARKS": true
+        "METRICS_BUILD_BENCHMARKS": true,
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
@@ -125,7 +126,6 @@
         "rhs": "Windows"
       },
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
