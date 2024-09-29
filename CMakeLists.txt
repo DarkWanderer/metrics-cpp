@@ -13,7 +13,6 @@ if(METRICS_BUILD_SANITIZER)
 endif()
 
 # Boost
-set(BOOST_INCLUDE_LIBRARIES asio accumulators beast json url)
 set(BOOST_USE_STATIC_LIBS ON)
 set(BOOST_ENABLE_CMAKE ON)
 if (METRICS_BUILD_SANITIZER)
