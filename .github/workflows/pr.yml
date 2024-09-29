@@ -10,9 +10,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows, ubuntu]
+        os: [windows, ubuntu, macos]
         conf: [debug, asan]
         arch: [x64]
+        exclude:
+          - os: macos
+            conf: asan
+
     uses: ./.github/workflows/build.yml
     with:
       conf: ${{ matrix.conf }}
