@@ -1,4 +1,4 @@
-name: Build  
+name: Build
 
 on:
   workflow_call:
@@ -23,54 +23,53 @@ on:
 jobs:
   build:
     name: Build
-    
+
     runs-on: ${{ inputs.os }}-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: ammaraskar/msvc-problem-matcher@master # Report MSVC compiler errors
-  
-    - uses: ammaraskar/gcc-problem-matcher@master # Report GCC compiler errors
-    
-    - uses: lukka/get-cmake@latest # Set up latest cmake/Ninja
-  
-    - uses: lukka/run-vcpkg@v11 # Set up vcpkg and install dependencies
-      with:
-        runVcpkgInstall: true
+      - uses: ammaraskar/msvc-problem-matcher@master # Report MSVC compiler errors
 
-    - name: Set preset name
-      id: preset
-      shell: bash
-      run: |
-        echo "name=${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
+      - uses: ammaraskar/gcc-problem-matcher@master # Report GCC compiler errors
 
-    - name: Set up Windows compiler
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: ${{ inputs.arch }}
+      - uses: lukka/get-cmake@latest # Set up latest cmake/Ninja
 
-    - name: Configure
-      run: cmake --preset ${{ steps.preset.outputs.name }}
+      - uses: lukka/run-vcpkg@v11 # Set up vcpkg and install dependencies
+        with:
+          runVcpkgInstall: true
 
-    - name: Build
-      run: cmake --build --preset ${{ steps.preset.outputs.name }}
+      - name: Set preset name
+        id: preset
+        shell: bash
+        run: echo "name=${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.conf }}" | sed s/ubuntu/linux/ >> $GITHUB_OUTPUT
 
-    - name: Test
-      run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
+      - name: Set up Windows compiler
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ inputs.arch }}
 
-    - name: Install
-      if: ${{ inputs.artifacts }}
-      run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix out/install/${{ steps.preset.outputs.name }}
-    
-    - name: Tar
-      if: ${{ inputs.artifacts }}
-      working-directory: out/install/${{ steps.preset.outputs.name }}
-      run: tar -czf ${{ github.workspace }}/${{ steps.preset.outputs.name }}.tar.gz .
-      
-    - name: Upload artifact
-      if: ${{ inputs.artifacts }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ steps.preset.outputs.name }}
-        path: ${{ steps.preset.outputs.name }}.tar.gz
+      - name: Configure
+        run: cmake --preset ${{ steps.preset.outputs.name }}
+
+      - name: Build
+        run: cmake --build --preset ${{ steps.preset.outputs.name }}
+
+      - name: Test
+        run: ctest --timeout 5 --preset ${{ steps.preset.outputs.name }}
+
+      - name: Install
+        if: ${{ inputs.artifacts }}
+        run: cmake --install out/build/${{ steps.preset.outputs.name }} --prefix out/install/${{ steps.preset.outputs.name }}
+
+      - name: Tar
+        if: ${{ inputs.artifacts }}
+        working-directory: out/install/${{ steps.preset.outputs.name }}
+        run: tar -czf ${{ github.workspace }}/${{ steps.preset.outputs.name }}.tar.gz .
+
+      - name: Upload artifact
+        if: ${{ inputs.artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.preset.outputs.name }}
+          path: ${{ steps.preset.outputs.name }}.tar.gz
