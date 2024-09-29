@@ -22,7 +22,7 @@ endif()
 
 find_package(Boost COMPONENTS asio accumulators beast json url REQUIRED)
 find_package(OpenSSL CONFIG REQUIRED)
-find_package(curl CONFIG REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 
 message(STATUS "Boost_INCLUDE_DIRS: [${Boost_INCLUDE_DIRS}]")
 message(STATUS "Boost_LIBRARIES: [${Boost_LIBRARIES}]")
