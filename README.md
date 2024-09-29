@@ -53,16 +53,18 @@ CPU Caches:
   L1 Instruction 32 KiB (x12)
   L2 Unified 512 KiB (x12)
   L3 Unified 32768 KiB (x2)
----------------------------------------------------------------
-Benchmark                     Time             CPU   Iterations
----------------------------------------------------------------
-BM_AtomicIncrement         1.39 ns         1.40 ns    448000000
-BM_CounterIncrement        1.34 ns         1.32 ns    497777778
-BM_GaugeSet                1.95 ns         1.95 ns    344615385
-BM_HistogramObserve        6.05 ns         6.00 ns    112000000
-BM_SummaryObserve          9.19 ns         9.21 ns     74666667
-BM_RegistryGet             53.0 ns         53.7 ns     16592593
-BM_RegistryGetLabels        131 ns          134 ns      5600000
+-----------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations
+-----------------------------------------------------------------------
+BM_Reference_AtomicIncrement       1.50 ns         1.51 ns    497777778
+BM_CounterIncrement                1.34 ns         1.34 ns    560000000
+BM_GaugeSet                        1.84 ns         1.84 ns    407272727
+BM_Histogram2Observe               4.24 ns         4.20 ns    160000000
+BM_Histogram5Observe               4.70 ns         4.60 ns    149333333
+BM_Histogram10Observe              5.37 ns         5.47 ns    100000000
+BM_SummaryObserve                  9.13 ns         9.21 ns     74666667
+BM_RegistryGet                     39.2 ns         39.2 ns     17920000
+BM_RegistryGetLabels                138 ns          138 ns      4977778
 ```
 
 ## Usage examples
@@ -150,11 +152,3 @@ auto sink = createOnDemandSink(url);
 if (sink)
     sink->send(registry);
 ```
-
-# 3rd-party tools and libraries
-
-This project utilizes following 3rd-party libraries and tools
-
-* [boost](https://github.com/boostorg/boost/)
-* [Catch2](https://github.com/catchorg/Catch2) - C++ testing framework
-* [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code
