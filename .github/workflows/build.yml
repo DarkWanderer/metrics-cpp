@@ -30,10 +30,14 @@ jobs:
     - uses: actions/checkout@v4
 
     - uses: ammaraskar/msvc-problem-matcher@master # Report MSVC compiler errors
+  
     - uses: ammaraskar/gcc-problem-matcher@master # Report GCC compiler errors
     
     - uses: lukka/get-cmake@latest # Set up latest cmake/Ninja
-    - uses: lukka/run-vcpkg@v11 # Set up vcpkg
+  
+    - uses: lukka/run-vcpkg@v11 # Set up vcpkg and install dependencies
+      with:
+        runVcpkgInstall: true
 
     - name: Set preset name
       id: preset
