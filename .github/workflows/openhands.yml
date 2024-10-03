@@ -16,6 +16,4 @@ jobs:
     if: github.event.label.name == 'fix-me'
     with:
       issue_number: ${{ github.event.issue.number }}
-    secrets: 
-      LLM_MODEL: ${{ vars.LLM_MODEL }}
-      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+    secrets: inherit
