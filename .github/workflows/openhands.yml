@@ -16,7 +16,7 @@ jobs:
     with:
       issue_number: ${{ github.event.issue.number }}
     secrets: 
-      PAT_USERNAME: ${{ variables.PAT_USERNAME }}
+      PAT_USERNAME: ${{ vars.PAT_USERNAME }}
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-      LLM_MODEL: ${{ variables.LLM_MODEL }}
+      LLM_MODEL: ${{ vars.LLM_MODEL }}
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
