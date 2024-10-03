@@ -1,6 +1,7 @@
 name: OpenHands PR
 
 on:
+  workflow_dispatch:
   issues:
     types: [labeled]
 
