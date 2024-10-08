@@ -95,7 +95,7 @@ TEST_CASE("Metric.Histogram", "[metric][histogram]")
 
     CHECK(histogram.sum() == 13);
     CHECK(histogram.count() == 4);
-    CHECK(values.size() == 3);
+    CHECK(values.size() == 4);
     CHECK(values[0].first == 1.);
     CHECK(values[1].first == 2.);
     CHECK(values[2].first == 5.);

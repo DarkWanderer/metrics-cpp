@@ -66,6 +66,7 @@ namespace Metrics {
     };
 
     std::shared_ptr<ISummary> makeSummary(const vector<double>& quantiles, double error) { 
+        // Explicit copy
         auto q = quantiles;
         sort(q.begin(), q.end());
         return std::make_shared<SummaryImpl>(q, error);

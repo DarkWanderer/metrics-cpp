@@ -55,7 +55,6 @@ namespace Metrics {
                     serialized["type"] = "histogram";
 
                     auto s = std::static_pointer_cast<IHistogram>(metric);
-                    serialized["count"] = s->count();
                     serialized["sum"] = s->sum();
 
                     json::array buckets;
@@ -65,6 +64,9 @@ namespace Metrics {
                         v["bound"] = kv.first;
                         v["count"] = kv.second;
                         buckets.emplace_back(v);
+
+                        if (kv.first == numeric_limits<double>::infinity())
+                            serialized["count"] = kv.second;
                     }
                     serialized["buckets"] = buckets;
                 }

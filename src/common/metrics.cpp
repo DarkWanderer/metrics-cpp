@@ -1,11 +1,13 @@
 #include <metrics/metric.h>
 
 #include <algorithm>
-#include <mutex>
 #include <atomic>
-#include <vector>
 #include <list>
 #include <map>
+#include <mutex>
+#include <numeric>
+#include <vector>
+#include <iterator>
 
 using namespace std;
 
@@ -102,32 +104,37 @@ namespace Metrics
 
 	class HistogramImpl : public IHistogram {
 	private:
-        vector<double> m_bounds;
+        const vector<double> m_bounds;
         vector<CounterImpl> m_counts;
-		CounterImpl m_count;
 		GaugeImpl m_sum;
 
+        static vector<double> preprocessBounds(const vector<double>& input) {
+            vector<double> bounds;
+
+            // Reserve extra for +Inf
+            bounds.reserve(bounds.size() + 1); 
+            copy(input.begin(), input.end(), back_inserter(bounds));
+
+            // Add mandatory +Inf bound
+            bounds.push_back(numeric_limits<double>::infinity());
+            sort(bounds.begin(), bounds.end());
+            auto last = unique(bounds.begin(), bounds.end());
+            bounds.erase(last, bounds.end());
+            return bounds;
+        }
 	public:
-		HistogramImpl(const vector<double>& bounds)
+		HistogramImpl(const vector<double>& bounds) :
+            m_bounds(preprocessBounds(bounds)), m_counts(m_bounds.size()), m_sum()
 		{
-            m_bounds = bounds;
-            sort(m_bounds.begin(), m_bounds.end());
-            auto last = unique(m_bounds.begin(), m_bounds.end());
-            m_bounds.erase(last, m_bounds.end());
-            m_counts = vector<CounterImpl>(m_bounds.size());
 		}
 
 		HistogramImpl(const HistogramImpl&) = delete;
 
 		IHistogram& observe(double value) override {
-            m_count++;
             m_sum += value;
-            auto bound = lower_bound(m_bounds.begin(), m_bounds.end(), value);
-            if (bound != m_bounds.end())
-            {
-                auto index = distance(m_bounds.begin(), bound);
-                m_counts[index]++;
-            }
+            auto bound = lower_bound(m_bounds.begin(), m_bounds.end(), value); // Guaranteed to find because of the infinity bound
+            auto index = distance(m_bounds.begin(), bound);
+            m_counts[index]++;
 			return *this;
 		}
 
@@ -145,7 +152,14 @@ namespace Metrics
 			return result;
 		};
 
-		uint64_t count() const override { return m_count; };
+        uint64_t count() const override {
+            uint64_t result = 0;
+            for (auto& c : m_counts) {
+                result += c.value();
+            }
+            return result;
+        };
+
 		double sum() const override { return m_sum; };
 	};
 

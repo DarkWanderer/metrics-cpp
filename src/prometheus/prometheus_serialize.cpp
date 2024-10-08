@@ -55,15 +55,19 @@ namespace Metrics {
 
         void serialize(ostream& os, const string& name, const Labels& labels, const IHistogram& histogram)
         {
+            uint64_t count = 0;
             for (auto& value : histogram.values()) {
                 os << name << '{';
                 for (auto kv = labels.cbegin(); kv != labels.cend(); kv++) {
                     os << kv->first << "=\"" << kv->second << '"' << ',';
                 }
                 os << "le=\"" << value.first << "\"} " << value.second << endl;
+
+                if (value.first == numeric_limits<double>::infinity())
+                    count = value.second;
             }
             os << name << "_sum" << labels << ' ' << histogram.sum() << endl;
-            os << name << "_count" << labels << ' ' << histogram.count() << endl;
+            os << name << "_count" << labels << ' ' << count << endl;
         }
 
         void serialize(ostream& os, const string& name, const Labels& labels, const std::shared_ptr<IMetric> metric)
