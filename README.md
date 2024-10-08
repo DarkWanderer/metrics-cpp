@@ -41,7 +41,7 @@ Boost::accumulators do not correctly work under MacOS, which prevents Summary cl
 |Serialization: Prometheus|![icon](https://img.shields.io/badge/GA-green)|
 |Sink: Statsd UDP|![icon](https://img.shields.io/badge/beta-yellow)|
 |Sink: Statsd TCP|![icon](https://img.shields.io/badge/beta-yellow)|
-|Sink: PushGateway|![icon](https://img.shields.io/badge/alpha-red)|
+|Sink: PushGateway|![icon](https://img.shields.io/badge/disabled-red)|
 |Sink: Prometheus HTTP|![icon](https://img.shields.io/badge/beta-yellow)|
 
 ## Performance
