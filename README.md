@@ -1,4 +1,4 @@
-# metrics-cpp
+﻿# metrics-cpp
 
 [![Build](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml/badge.svg)](https://github.com/DarkWanderer/metrics-cpp/actions/workflows/build.yml)
 ![Readiness](https://img.shields.io/badge/readiness-beta-yellow)
@@ -28,9 +28,11 @@ The design goals of this library are the following:
 
 ## Limitations & compromises
 
-Due to limited number of locks employed, there is no strong consistency guarantee between different metrics. If a particular thread changes two counters and serialization happens in the middle, you may see a value for one counter increasing but not for the other - until the next time metrics are collected. Hence, care must be taken when creating alerts based on metrics differential. Another compromise stemming from minimized locking requirements is inability to _remove_ metrics from a `Registry` - however, that is something which is not supported by Prometheus anyway
-
-Boost::accumulators do not correctly work under MacOS, which prevents Summary class from working - more throrough investigation pending
+* Due to limited number of locks employed, there is no strong consistency guarantee between different metrics
+* If a particular thread changes two counters and serialization happens in the middle, you may see a value for one counter increasing but not for the other - until the next time metrics are collected. Hence, care must be taken when creating alerts based on metrics differential
+* For same reason, histogram 'sum' may be out of sync with total count - skewing the average value with ⅟n asymptotic upper bound
+* It's not possible to _remove_ metrics from a `Registry` - conceptually shared with Prometheus
+* Boost::accumulators do not correctly work under MacOS, which prevents Summary class from working there - more throrough investigation pending
 
 ## Readiness
 
