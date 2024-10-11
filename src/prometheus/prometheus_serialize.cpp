@@ -2,6 +2,7 @@
 #include <metrics/sink.h>
 
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 using namespace std;
