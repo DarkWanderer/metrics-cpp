@@ -188,7 +188,7 @@ TEST_CASE("Timer.Summary", "[timer][summary]")
     Summary s({ .5, .9, .99 });
     {
         Timer<milliseconds> t(s);
-        sleep_for(2ms);
+        sleep_for(5ms);
     }
     CHECK(s.sum() > 1);
     CHECK(s.count() == 1);
