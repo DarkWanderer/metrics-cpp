@@ -186,16 +186,30 @@ TEST_CASE("Timer.Histogram", "[timer][histogram]")
 TEST_CASE("Timer.Summary", "[timer][summary]")
 {
     Summary s({ .5, .9, .99 });
+
+    const auto values_before = s.values();
+    CHECK(values_before.size() == 3);
+
+    for (auto v : values_before) { // Validate that summary correctly returns 0 when not enough data
+        CHECK(v.second == 0);
+    }
+
+    const auto count = 3;
+    for (int i = 0; i < count; i++) // Ensure there is enough data
     {
         Timer<milliseconds> t(s);
         sleep_for(2ms);
     }
     CHECK(s.sum() > 1);
-    CHECK(s.count() == 1);
-    auto values = s.values();
-    CHECK(values[0].second > 1);
-    CHECK(values[1].second > 1);
-    CHECK(values[2].second > 1);
+    CHECK(s.count() == count);
+    
+    const auto values_after = s.values();
+    CHECK(values_after.size() == 3);
+
+    for (auto v : values_after) {
+        CHECK(v.second > 1);
+        CHECK(v.second < 1000000); // sanity check to ensure there is no oveflow or underflow
+    }
 }
 
 TEST_CASE("Sink.OnDemand", "[url][sink]")

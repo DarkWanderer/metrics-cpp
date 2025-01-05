@@ -23,11 +23,11 @@ namespace Metrics {
     // Utilizes locking internally. Using Histogram is recommended instead
     class SummaryImpl : public ISummary {
     private:
-        typedef accumulator_set<double, stats<tag::extended_p_square_quantile(quadratic)> > accumulator_t;
+        typedef accumulator_set<double, stats<tag::count, tag::sum, tag::tail_quantile<right>>> accumulator_t;
 
         mutable mutex m_mutex;
         const vector<double> m_quantiles;
-        accumulator_set<double, stats<tag::count, tag::sum, tag::tail_quantile<right>>> m_accumulator;
+        accumulator_t m_accumulator;
 
     public:
         SummaryImpl(const vector<double>& quantiles, double error) :
@@ -48,8 +48,10 @@ namespace Metrics {
         {
             unique_lock<mutex> lock(m_mutex);
             vector<pair<double, uint64_t>> result;
+            const bool enough_data = boost::accumulators::count(m_accumulator) > 1;
+
             for (auto q : m_quantiles) {
-                result.emplace_back(q, boost::accumulators::quantile(m_accumulator, quantile_probability = q));
+                result.emplace_back(q, enough_data ? boost::accumulators::quantile(m_accumulator, quantile_probability = q) : 0);
             }
             return result;
         };
