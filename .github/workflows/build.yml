@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ inputs.artifacts }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.preset.outputs.name }}
           path: ${{ steps.preset.outputs.name }}.tar.gz
