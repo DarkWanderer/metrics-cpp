@@ -34,7 +34,7 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: ammaraskar/msvc-problem-matcher@master # Report MSVC compiler errors
 
